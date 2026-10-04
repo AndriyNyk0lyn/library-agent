@@ -14,15 +14,15 @@ The request path is browser → authenticated Next.js route → shared feature s
 
 Keep these responsibilities distinct:
 
-| Boundary | Responsibility |
-| --- | --- |
-| UI | Present records and state, collect input, handle accessible interaction |
-| Route or server action | Verify session, validate request, invoke service, format response |
-| Feature service | Apply book/import/plan rules and persist authorized changes |
-| MCP adapter | Validate tool input, derive user context, invoke service, return bounded structured results |
-| Agent | Resolve user intent, retrieve real records, explain choices, react to validation feedback |
-| Catalog provider | Normalize external Open Library candidates with provenance |
-| Database | Enforce constraints, user isolation, uniqueness, and atomic writes |
+| Boundary               | Responsibility                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| UI                     | Present records and state, collect input, handle accessible interaction                     |
+| Route or server action | Verify session, validate request, invoke service, format response                           |
+| Feature service        | Apply book/import/plan rules and persist authorized changes                                 |
+| MCP adapter            | Validate tool input, derive user context, invoke service, return bounded structured results |
+| Agent                  | Resolve user intent, retrieve real records, explain choices, react to validation feedback   |
+| Catalog provider       | Normalize external Open Library candidates with provenance                                  |
+| Database               | Enforce constraints, user isolation, uniqueness, and atomic writes                          |
 
 Do not add layers that merely forward the same arguments. A feature service is a set of focused functions, not a mandatory class hierarchy.
 
@@ -80,6 +80,25 @@ Persist user-confirmed profile preferences and bounded conversation state. Displ
 Use the PRD's bounded input, turn, revision, quota, concurrency, and deadline limits. Persist cross-instance coordination with expiry. A turn cap alone is not a wall-clock bound. Configure the total deadline below hosting limits, with cancellation and honest uncertain-write reporting.
 
 Expose safe run/tool/message events to the UI. A disconnected browser must not automatically repeat mutations. Store final run/message outcomes so refresh can recover known results.
+
+## Agent and MCP code navigation
+
+The route files expose Node.js settings and HTTP entry points. `src/agent/chat-handler.ts` owns chat admission, request deadline and SSE lifetime; `src/agent/http.ts` verifies cookie identity/origin and bounds JSON input. `src/mcp/http.ts` independently verifies bearer identity/Host/Origin, creates a request-scoped Supabase context and owns stateless transport cleanup. Neither adapter substitutes direct feature calls for the agent's HTTP hop.
+
+Change runtime behavior at its owner:
+
+| Responsibility                                | Module and extension point                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Authored instructions and model configuration | `agent/instructions.ts` holds behavioral rules; `agent/config.ts` validates server configuration, disables tracing/sensitive logging, and constructs the agent's model settings and untrusted reader context. `agent/turn-budget.ts` reserves the final turn for an answer.                                                                                                                                                                                       |
+| Run orchestration                             | `agent/runner.ts` connects MCP, loads profile/history, runs the model, validates results, persists before emitting final prose, handles failure and closes MCP/provider. Keep the completed flag so a failed final snapshot never overwrites confirmed success.                                                                                                                                                                                                   |
+| HTTP observation and safe activity            | `agent/observed-mcp.ts` owns authenticated cancellable HTTP, started/completed activity, attempted-write uncertainty, plan revision gating and model-facing candidate annotation. Final book verification reads raw HTTP results.                                                                                                                                                                                                                                 |
+| Result grounding                              | `agent/recommendation-candidates.ts` maps current-run references; `agent/answer-results.ts` resolves/rechecks eligibility and authoritative title/authors. `agent/plan-results.ts` validates observed schedules/saves and bounds revisions/result displays.                                                                                                                                                                                                       |
+| Persistence and continuation                  | `agent/storage.ts` validates JSON/snapshots/whole SDK exchanges, bounds restored history, records activity and shares capability-gated success/failure finalization. Admission is in `agent/chat-handler.ts`; SQL owns reader-wide quotas, leases, retention, ownership and atomic transitions.                                                                                                                                                                   |
+| Failure reporting                             | `agent/run-failure.ts` classifies SDK/app errors and emits allowlisted diagnostic metadata; `agent/failure-messages.ts` provides safe user copy. Never log raw errors or tool payloads.                                                                                                                                                                                                                                                                           |
+| Tool definitions and dispatch                 | `mcp/tools.ts` is one explicit list pairing each existing tool's description, input/output schemas, read-only flag and shared feature service. `mcp/server.ts` derives discovery and dispatch from that list and validates results/maps thrown read/write failures. Add a tool at this list, with rules/ownership in its feature service and schemas; update activity/instructions/result handling only when needed. No generic registration framework is needed. |
+| Chat stream and recovery                      | `agent/chat-stream.ts` validates/bounds SSE framing and owns reader cleanup/final-event detection. `agent/chat.tsx` owns run/composer state, run-ID checks, rendering, Stop/unmount and GET-only recovery. `agent/schema.ts` remains the display/event contract.                                                                                                                                                                                                  |
+
+These modules separate independently meaningful policies and resource lifetimes. Public HTTP/tool schemas, SQL/RPC contracts and existing feature services are preserved by the maintainability refactor; it adds no dependency, migration or conversation capability. See the [contract inventory and review handoff](../.scratch/chat-history-maintainability/issues/01-agent-mcp-refactor.md) before changing lifecycle behavior. The chat-history ticket must scope snapshots/continuation to conversations while retaining reader-wide admission limits and the capability checks.
 
 ## Dependencies and checks
 

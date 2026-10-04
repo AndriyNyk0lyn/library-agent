@@ -31,6 +31,8 @@ User requested minimal showcase setup focused on MCP, agents, and main app featu
 
 - [Reading plans](../showcase-mvp/issues/04-reading-plans.md): deterministic preview/save/listing, owner-safe durable retries and bounded validation revisions implemented; unapplied migration and user QA documented.
 
+- [Agent/MCP maintainability](../chat-history-maintainability/issues/01-agent-mcp-refactor.md): responsibilities and tool dispatch refactored with preserved contracts, passing static checks and independent review; chat history is next, runtime QA remains unverified.
+
 ## Not yet specified
 
 - Detailed library component boundaries after the first slice is selected and real code exists.

@@ -63,3 +63,7 @@ No automated tests, functional tests, browser QA, database/advisor queries, remo
 - [Supabase RLS/grants](https://supabase.com/docs/guides/database/postgres/row-level-security) and [JavaScript RPC](https://supabase.com/docs/reference/javascript/rpc).
 - [Supabase changelog](https://supabase.com/changelog): checked relevant Postgres minor-release and Data API grant changes; no affected extensions were introduced, and table/function grants are explicit.
 - [Agents SDK MCP integration](https://openai.github.io/openai-agents-js/guides/mcp/); installed SDK types and existing observed HTTP adapter were retained without dependency changes.
+
+## Maintenance navigation
+
+Plan tool descriptions, schemas and service bindings live together in `src/mcp/tools.ts`; `src/mcp/server.ts` handles common validated dispatch, and `src/mcp/http.ts` owns transport/authentication. `src/agent/observed-mcp.ts` applies the existing per-run `PlanResults` revision/result policy around real HTTP calls; `src/agent/storage.ts` persists its bounded displays on success/failure. Calculator, services, SQL and plan contracts above are unchanged. See the [engineering navigation map](../engineering.md#agent-and-mcp-code-navigation).

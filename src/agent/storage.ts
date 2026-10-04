@@ -2,8 +2,9 @@ import "server-only";
 import { protocol, type AgentInputItem } from "@openai/agents";
 import { z } from "zod";
 import type { ReaderContext } from "@/books/service";
+import type { PlanDisplay } from "@/plans/schema";
 import type { Json } from "@/lib/supabase/database.types";
-import { snapshotSchema, type Activity } from "./schema";
+import { snapshotSchema, type Activity, type ChatRun } from "./schema";
 
 // JSON round-trip strips SDK objects and validates the database boundary without a cast.
 const jsonSchema: z.ZodType<Json> = z.lazy(() =>
@@ -65,4 +66,61 @@ export async function recordActivity(
     })
     .abortSignal(AbortSignal.timeout(5000));
   if (error || !data) throw new Error("ACTIVITY_UNAVAILABLE");
+}
+
+// Shared finalization payload keeps success and failure on the same capability-gated RPC.
+export async function finishRun(
+  reader: ReaderContext,
+  runId: string,
+  runKey: string,
+  outcome: {
+    status: "completed" | "failed" | "interrupted";
+    answer: string | null;
+    cards: ChatRun["cards"];
+    plans: PlanDisplay[];
+    history: Json;
+    error: string | null;
+    usage: unknown;
+  },
+) {
+  const { data, error } = await reader.supabase
+    .rpc("finish_agent_run", {
+      p_id: runId,
+      p_key: runKey,
+      p_status: outcome.status,
+      p_answer: outcome.answer,
+      p_cards: asJson(outcome.cards),
+      p_plans: asJson(outcome.plans),
+      p_history: outcome.history,
+      p_error: outcome.error,
+      p_usage: asJson(outcome.usage),
+    })
+    .abortSignal(AbortSignal.timeout(5000));
+  return !error && Boolean(data);
+}
+
+export async function persistFailedRun(
+  reader: ReaderContext,
+  runId: string,
+  runKey: string,
+  interrupted: boolean,
+  code: string,
+  plans: PlanDisplay[],
+): Promise<ChatRun | undefined> {
+  const saved = await finishRun(reader, runId, runKey, {
+    status: interrupted ? "interrupted" : "failed",
+    answer: null,
+    cards: [],
+    plans,
+    history: [],
+    error: code,
+    usage: null,
+  });
+  if (!saved) return;
+  try {
+    return (await loadChat(reader)).runs.find((run) => run.id === runId);
+  } catch {
+    // Final status may be saved while its read is unavailable; keep recovery required.
+    return undefined;
+  }
 }

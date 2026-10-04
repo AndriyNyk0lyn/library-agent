@@ -58,3 +58,7 @@ No automated tests, live database/advisor queries, builds, browser QA, live MCP 
 ## Reading-plans extension
 
 Ticket 04 adds three authenticated HTTP tools, plan activity labels and persisted observed plan results beside recommendations. `finish_agent_run` now accepts a defaulted `p_plans` array; `chat_snapshot` includes `plans` (older rows default to `[]`). Book/profile contracts, whole continuation exchanges, run caps and uncertainty recovery remain. Apply the reading-plans migration with its matching code; see [plan contracts and user checks](09-reading-plans.md).
+
+## Maintenance navigation
+
+The [engineering navigation map](../engineering.md#agent-and-mcp-code-navigation) identifies the owners of instructions/configuration, run orchestration, HTTP activity, authoritative results, storage, tool definitions and UI stream/recovery. The maintainability refactor preserves the contracts above, including one conversation per reader; no new migration/configuration/dependency is required. The dated [refactor inventory and independent review](../../.scratch/chat-history-maintainability/issues/01-agent-mcp-refactor.md) records the static evidence and runtime limitations. Continue with chat-history ticket 02 before hosted showcase work.
