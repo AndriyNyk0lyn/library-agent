@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+coverage/
+test-results/
+playwright-report/
+.vercel/
+.env*
+!.env.example
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
+supabase/.temp/
+supabase/.branches/
+# Local issues and project documentation are intentionally tracked.
