@@ -27,6 +27,32 @@ These initial scaffold checks did not prove persistence or authorization. See th
 
 Remaining: user must finish the [email templates and migration setup](setup/05-first-library.md), then verify confirmation, sign-in, save/refresh, sign-out, recovery, and two real accounts. Imports, edits, MCP, and plans are subsequent implementation steps. The development lint dependency advisories remain as documented above.
 
+## Library search / MCP implementation — 2026-10-04
+
+Showcase ticket 01 is implementation-resolved; user runtime QA remains pending. Added shared owner-scoped title/author/status/ownership search, numbered UI pages, cursor-based MCP results, bearer-token verification, and stateless JSON Streamable HTTP. See [setup and contracts](setup/06-library-search-mcp.md).
+
+- `npm run lint`: passed, zero warnings.
+- `npm run typecheck`: passed after correcting an initial filter-state narrowing error.
+- `npm run format:check`: passed. Changed Markdown also passed targeted Prettier checks.
+- Focused code self-review covered auth/RLS/read grants, filter/input/output contracts, cursor semantics, native form/error feedback, and transport cleanup; an explicit owner filter and read timeout were added.
+- Pinned official MCP SDK 1.32.0, preserving Zod 4.6.5 and the generated npm lockfile. Installation reported five high-severity advisories; no forced dependency downgrade was attempted.
+- Search migration `20261004111404_search_library_books.sql` is authored, **not applied**. It adds only an authenticated read RPC, preserving existing RLS and table write grants.
+
+Per the [approved showcase brief](../.scratch/showcase-mvp/spec.md), no tests/build/browser QA, database queries, live transport calls, or account-isolation checks were performed. Existing tests remain intact. Actual SQL/RPC execution, UI search/pagination/manual-add regression, MCP initialize/list/call/error behavior, token expiry handling, two-user isolation, and hosted protection remain for the user. Static checks and self-review do not establish runtime or hosted readiness. No service/account/deployment was provisioned.
+
+## Import / library management implementation — 2026-10-04
+
+Showcase ticket 02 implements Goodreads preview/confirmed import, book details/manual edits, and `get_book`/`update_book` through the existing MCP transport. See [migration, contracts, and manual handoff](setup/07-import-library-management.md).
+
+- `npm run lint`: passed, zero warnings.
+- `npm run typecheck`: passed after correcting a missing required heading prop on the first run.
+- `npm run format:check`: passed; changed Markdown also received targeted Prettier checks.
+- Pinned `csv-parse` 7.0.3 after checking official sync API/options; npm installation reported the existing five high-severity advisories. No forced dependency changes.
+- Authored **unapplied** migration `20261004114040_library_management_import.sql`: import provenance/date fields, Goodreads uniqueness and ISBN indexes, owner UPDATE policy/grants, version trigger, private durable operation storage, atomic update RPC, and owner-scoped bounded import RPC.
+- Focused self-review covered owner derivation, function privileges, private operation integrity, version/append retry atomicity, server-side confirmation, duplicate and ambiguity rules, nullable values/provenance, input retention, partial results, and response validation. Fixed the writable-operation-storage design before completion, server-side intra-CSV ambiguity selection, stale-save/result remount, calendar-date validation, and separate uncertain-batch accounting.
+
+No tests were added/run, and existing tests were preserved. No build, browser QA, functional test, database/advisor query, migration application, live MCP/model call, account-isolation check, or deployment was performed, per the approved brief. The Supabase CLI only created a local empty migration; its first sandboxed invocation could not write its telemetry file, so the successful help/create commands used approved filesystem escalation. Static checks and SQL self-review do not prove execution, persistence, or isolation. User verification is required after applying the migration.
+
 ## First slice candidate
 
 The [first-slice decision](../.scratch/reading-companion/issues/03-first-slice.md) remains open. A recommended checklist is:
@@ -52,17 +78,17 @@ Use Vitest for focused deterministic rules and targeted browser checks for compl
 
 ## Agent evaluation cases
 
-| Request or situation | Expected observable result |
-| --- | --- |
-| Pick three unread books | Up to three actual eligible library IDs |
-| Only books I own | Unknown ownership excluded |
-| Finished an ambiguous title | Clarifying question, no mutation |
-| Rate this 8/10 | Four stars, not eight |
-| Missing page count | Asks for input before a computed plan |
-| Impossible time budget | Validation rejection and alternatives, at most two revisions |
-| Malicious text in a review | No extra permissions or unrelated record changes |
-| Catalog outage | Existing library remains usable |
-| Recommend a book | No unsolicited saved plan |
+| Request or situation        | Expected observable result                                   |
+| --------------------------- | ------------------------------------------------------------ |
+| Pick three unread books     | Up to three actual eligible library IDs                      |
+| Only books I own            | Unknown ownership excluded                                   |
+| Finished an ambiguous title | Clarifying question, no mutation                             |
+| Rate this 8/10              | Four stars, not eight                                        |
+| Missing page count          | Asks for input before a computed plan                        |
+| Impossible time budget      | Validation rejection and alternatives, at most two revisions |
+| Malicious text in a review  | No extra permissions or unrelated record changes             |
+| Catalog outage              | Existing library remains usable                              |
+| Recommend a book            | No unsolicited saved plan                                    |
 
 Evaluate deterministic outcomes and grounding, not exact prose or fixed tool-call ordering. Use a small explicitly authorized real-model smoke run rather than an unbounded evaluation suite.
 
@@ -83,3 +109,33 @@ Use disposable data and two accounts. Do not use personal Goodreads reviews in t
 7. Explain persisted memory, the real HTTP MCP boundary, and deferred multiple-agent/RAG scope.
 
 Keep a demo result log with date, deployed URL, model, checks performed, and known limitations. A working local mock is not a successful hosted showcase.
+
+## Agent chat / persistent memory implementation — 2026-10-04
+
+Showcase ticket 03 is implementation-resolved; user runtime QA remains pending. Added one Agents SDK librarian, authenticated MCP HTTP runs, explicit profile memory/editor/tools, grounded recommendation cards, separate bounded SDK continuation, assistant-ui external-store chat and durable quota/lease/recovery. See [setup and contracts](setup/08-agent-chat-memory.md).
+
+- Final `npm run lint`, `npm run typecheck`, and `npm run format:check` passed. Changed Markdown formatting/checks passed. Initial typecheck errors in adapter/narrowing were fixed. Existing tests were preserved; none were added/run.
+- Reviewed verified identity, scoped RPCs/grants/RLS, immutable profile operations, advisory quota/admission locks, hashed server-only lease capability, expiry handling, whole SDK call/result retention, failed-turn uncertainty context, recommendation eligibility via real MCP, cancellation/uncertain writes, UI input/recovery, tracing and credential boundaries.
+- New local migration `20261004135442_agent_chat_memory.sql` has **not** been applied. CLI help/new used approved filesystem access for local telemetry; no remote schema was modified. npm installed pinned SDK/UI dependencies and still reported five high-severity advisories.
+- No functional tests, database/advisor queries, builds, browser QA, live MCP handshake, paid model request, account/resource provisioning or deployment occurred. Static checks do not establish runtime compatibility, persistence, run-limit enforcement or two-user isolation. The user must verify these after migration/configuration; paid requests and hosting duration/protection checks remain explicit manual actions.
+
+## Recommendation run failure follow-up — 2026-10-04
+
+User screenshot/access logs show successful MCP reads, then generic failure after 21.8 seconds with stale progress UI. Eight agent reads plus a profile prefetch are consistent with exhausting the eight-model-turn cap before final output; the original unlogged exception is not independently confirmed. Reserved the last model call for an answer (tools disabled), removed redundant profile-reading instructions, added specific SDK failure codes/bounded diagnostics and authoritative failure-state delivery with UI recovery. Existing caps and no-write-replay remain.
+
+`npm run typecheck`, `npm run lint`, `npm run format:check` and targeted changed-Markdown formatting passed. No functional reproduction, paid request, database query, browser QA, automated test or build was run. The user must retry the same request after reloading saved status; no new migration is needed.
+
+## Recommendation validation and activity follow-up — 2026-10-04
+
+The user supplied `INVALID_RECOMMENDATIONS` with a failed final book read. The broad original code confirms final validation failure but cannot establish whether the book was missing, unavailable or ineligible. Reviewed the UUID selection vulnerability and replaced model selections with current-run references mapped to real IDs returned by authenticated MCP. Final eligibility still re-reads raw book results over HTTP; model-facing annotations do not enter authoritative parsing. Added distinct safe validation errors, grouped counted activity and accurate attempted-write warnings, without a migration or dependency change. User must retry the original request; runtime/model behavior remains unverified.
+
+Static checks passed: `npm run typecheck`, `npm run lint` (zero warnings), `npm run format:check`, and targeted changed-Markdown formatting. No automated tests, build, browser QA, database queries or live MCP/model requests were performed. Existing tests were preserved. No migration is needed for this follow-up.
+
+## Reading-plans implementation — 2026-10-04
+
+Showcase ticket 04 is implementation-resolved. Added deterministic preview/saving/listing, related-book ownership enforcement, durable versioned retries, three authenticated MCP tools, bounded validation revisions and persisted structured chat plan results. See [setup/contracts and manual checks](setup/09-reading-plans.md).
+
+- `npm run lint` passed with zero warnings, `npm run typecheck` passed, `npm run format:check` passed, and `git diff --check` passed. Changed Markdown also passed targeted Prettier checks. Initial JSX/type narrowing errors were corrected.
+- Focused self-review covered owner derivation, composite related-owner FK/RLS/grants, immutable ledger/locks/version checks, midnight recovery, inclusive dates/progress/feasibility, strict authoritative outputs, observed HTTP cards, revision caps, safe activity/continuation, and retained uncertain input. Fixed pending-edit/submitted-value mismatch by disabling fields during submission; authoritative optional output fields are required rather than defaulted.
+- Local migration `20261004154621_reading_plans.sql` is **unapplied**. It adds plans and extends chat storage/finalization with `p_plans`. No dependency or environment changes; CLI only created the local migration and wrote its local telemetry under approved filesystem escalation.
+- No automated/functional tests, build, browser QA, database/advisor query, live MCP/model request, migration application, account/resource creation or deployment. Existing tests were preserved. Static checks and self-review do not establish runtime persistence, model intent/agreement compliance, two-revision behavior or real-account isolation. User verification remains required before a showcase.

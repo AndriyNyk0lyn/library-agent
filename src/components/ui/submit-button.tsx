@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "./button";
 import { useFormStatus } from "react-dom";
 
 export function SubmitButton({
@@ -11,12 +12,8 @@ export function SubmitButton({
 }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex min-h-11 items-center rounded bg-accent px-4 py-2 font-medium text-white hover:bg-green-800 disabled:cursor-wait disabled:opacity-60"
-    >
+    <Button type="submit" disabled={pending}>
       {pending ? pendingLabel : children}
-    </button>
+    </Button>
   );
 }

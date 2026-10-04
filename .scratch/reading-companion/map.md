@@ -16,6 +16,10 @@ Prepare Reading Companion for implementation with the MVP requirements, developm
 - Research can resolve in parallel. Do not resolve human decision tickets without a live exchange or resolve more than one per session.
 - No Git repository exists yet. Research assets are saved here with ticket context pointers; isolated `research/<name>` branches cannot exist until version control is initialized. Do not claim a branch or deployed spike was created.
 
+### 2026-10-04 — Setup scope
+
+User requested minimal showcase setup focused on MCP, agents, and main app features. All setup guides now follow one project/default email sender, omit custom SMTP provisioning and operational detours, and defer OpenAI until agent integration. First remaining step: email templates + migration + save/refresh one book; then the authenticated MCP search tool. Hosted account isolation remains required evidence, not a reason to provision email infrastructure now.
+
 ## Decisions so far
 
 - [Verify service setup prerequisites](issues/01-service-setup.md) — Local and Supabase preparation are documented; auth, migrations, and isolation checks await app code.
@@ -24,6 +28,8 @@ Prepare Reading Companion for implementation with the MVP requirements, developm
 - [Scaffold the Next.js application](issues/06-app-scaffold.md) — Runnable app shell and honest disconnected library state verified locally; Supabase is next.
 
 - [Connect Supabase authentication and private book storage](issues/07-supabase-library.md) — Auth and add/list code plus the migration are locally verified; remaining hosted setup is documented.
+
+- [Reading plans](../showcase-mvp/issues/04-reading-plans.md): deterministic preview/save/listing, owner-safe durable retries and bounded validation revisions implemented; unapplied migration and user QA documented.
 
 ## Not yet specified
 

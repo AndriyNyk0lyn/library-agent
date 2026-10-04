@@ -30,11 +30,11 @@ Agent tools return validated structured results, honest errors, and safe activit
 
 Build simple accessible screens and the necessary empty, loading, error, and success states. Share controls without building a design system in advance. See `docs/style-guide.md` for details.
 
-Use focused tests for parsing, planning, authorization, and retry behaviour. Mocked tests do not prove deployed MCP transport or user isolation. Report exactly what ran and what remains unverified. Honour user-specified manual testing boundaries.
+For showcase implementation tickets, read the [shared brief](.scratch/showcase-mvp/spec.md) and follow its user-approved manual-testing boundary: focused code self-review and applicable lint/type/format checks; functional testing, browser QA, and builds belong to the user unless separately requested. Preserve existing tests. Report exactly what ran and what remains unverified; self-review does not prove runtime behavior or user isolation.
 
 ## Commands and project state
 
-Auth and private book creation/listing use Supabase; hosted migration application and real-account checks remain pending. Agent and MCP integration are still future work. Read `package.json` for actual scripts. Use lint, typecheck, tests, format checks, and build as appropriate. Read `docs/setup/05-first-library.md` before hosted setup. See `docs/setup/01-local-development.md` for local setup.
+Auth and private book creation/listing use Supabase. The user reports first-library setup steps 1–5 complete; real-account isolation remains unverified. Library management, MCP and agent chat/profile memory are implemented; their migration application and runtime behavior remain unverified. Read `docs/setup/08-agent-chat-memory.md` before changing chat, profile or run contracts. Reading plans and structured chat plan results are implemented; read `docs/setup/09-reading-plans.md` before changing these contracts. Deployment remains future work. Read `package.json` for actual scripts. Use the checks allowed by the current ticket and user instructions. Read `docs/setup/05-first-library.md` before hosted setup. See `docs/setup/01-local-development.md` for local setup.
 
 ## Agent skills
 

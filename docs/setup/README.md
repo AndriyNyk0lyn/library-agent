@@ -1,29 +1,33 @@
-# Setup overview
+# Showcase MVP setup
 
-These guides explain the required accounts and the later technical setup. They do not create resources or authorize charges. Never paste API keys, database credentials, or personal CSV contents into this chat.
+Use one Supabase project, one local Next.js app, and one OpenAI API key when agent work starts. Add one hosted app for the MCP showcase. No extra infrastructure is needed.
 
-## What can be done now
+## Do now
 
-1. Check local Node/npm and decide where version control will live using [local development](01-local-development.md).
-2. Create a Supabase project, copy its URL and publishable key locally, and configure auth using [Supabase setup](02-supabase.md).
-3. Create an OpenAI API project/key and check model access and billing using [OpenAI setup](03-openai.md).
-4. Prepare a hosting account and repository using [deployment setup](04-deployment.md).
+Your Supabase project and `.env.local` are already created by your report. Auth and private book creation/listing are implemented; hosted migration and real-account checks remain unverified.
 
-## What waits for implementation
+1. Follow [First working library](05-first-library.md): finish confirmation settings, apply the migration, sign in, and save one book.
+2. Apply and manually verify [library search/MCP](06-library-search-mcp.md) and [import/library management](07-import-library-management.md). Verify authorization and account isolation.
+3. Apply the [chat/profile migration](08-agent-chat-memory.md), configure [OpenAI](03-openai.md), and manually verify recommendations, explicit memory and run recovery.
+4. Apply and manually verify [reading plans](09-reading-plans.md), including deterministic rejection, explicit saves, refresh and retry recovery.
+5. Follow [Showcase hosting](04-deployment.md) for the first hosted MCP milestone, before expanding to all tools.
+6. Continue ticket 05 for hosted showcase preparation and handoff.
 
-The application scaffold can be installed and run now using the [local guide](01-local-development.md). Authentication, private book creation/listing, and the initial migration now exist. Complete [the first-library setup](05-first-library.md). Agent and MCP integration remain future work. Schema application, MCP calls, and deployment verification await implementation; do not guess migration filenames or create tables manually to match an unfinished app.
+[Local development](01-local-development.md) covers installation and checks. [Supabase setup](02-supabase.md) is the reference if you need to revisit project configuration.
 
-After implementation starts, keep setup steps aligned with the committed package scripts, lockfile, migrations, environment validation, and deployed smoke-test results.
+## Skip for this prototype
 
-## Credential map
+Custom SMTP and email domains, custom app domains, separate staging/production projects, preview protection bypass setup, Docker-based local Supabase, CI/CD pipelines, analytics, and extra monitoring services are not setup requirements. Use the default email sender and a provider-assigned hosting URL.
 
-| Value | Location | Browser exposure |
-| --- | --- | --- |
-| Supabase project URL | `.env.local` and hosting variables | Allowed |
-| Supabase publishable key | `.env.local` and hosting variables | Allowed; RLS still required |
-| OpenAI API key | `.env.local` and hosting variables | Never |
-| Supabase user access token | Auth session and server-to-server MCP requests | Never include in logs or user-facing tool events |
-| Supabase secret/service-role key | Not required by routine app/tool paths | Never |
-| CLI login/database password | Local Supabase tooling when applying migrations | Never commit |
+Keep authentication, RLS, server-only secrets, real persistence, bounded agent execution, and retry safety. These support the showcase's actual features and account isolation.
 
-Do not treat a hosting URL or API key alone as proof of a successful setup. Complete the checkpoints in each guide and the [verification checklist](../verification.md).
+## Credentials
+
+| Value                                           | Where it belongs                                    |
+| ----------------------------------------------- | --------------------------------------------------- |
+| Supabase URL and publishable key                | `.env.local`; hosting variables when deploying      |
+| `APP_BASE_URL`                                  | Local app origin; hosted app origin when deploying  |
+| OpenAI key and model ID                         | Server environment; needed when chat is implemented |
+| Scoped Supabase CLI token and database password | Terminal only while applying migrations             |
+
+No service-role key is needed for the app. Never commit secrets or private Goodreads exports. These guides do not provision resources or change billing settings. Record real results in [verification](../verification.md).

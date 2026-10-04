@@ -43,3 +43,7 @@ export function getAppOrigin() {
   }
   return url.origin;
 }
+
+export function getMcpEndpoint() {
+  return new URL("/api/mcp", getAppOrigin());
+}

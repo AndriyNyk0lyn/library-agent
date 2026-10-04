@@ -39,5 +39,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/library/:path*", "/auth/:path*"],
+  matcher: [
+    "/library/:path*",
+    "/auth/:path*",
+    "/chat/:path*",
+    "/profile/:path*",
+    "/plans/:path*",
+  ],
 };

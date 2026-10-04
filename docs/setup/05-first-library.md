@@ -1,6 +1,6 @@
 # Connect the first working library
 
-The app now implements sign-up, email confirmation, sign-in, sign-out, password recovery, and adding/listing private books. Your Supabase project and `.env.local` are prepared. Custom SMTP is deferred; use the email address belonging to your Supabase organization for initial email tests. The default sender has restrictive limits. [Supabase SMTP guidance](https://supabase.com/docs/guides/auth/auth-smtp).
+The app now implements sign-up, email confirmation, sign-in, sign-out, password recovery, and adding/listing private books. Your Supabase project and `.env.local` are prepared. Use the default email sender with the email address belonging to your Supabase organization for initial tests. The default sender has restrictive limits. [Supabase SMTP guidance](https://supabase.com/docs/guides/auth/auth-smtp).
 
 ## 1. Check the local app origin
 
@@ -25,19 +25,29 @@ Keep email/password authentication and email confirmation enabled. Under **Authe
 
 ```html
 <h2>Confirm your email</h2>
-<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email">Confirm email</a></p>
+<p>
+  <a
+    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email"
+    >Confirm email</a
+  >
+</p>
 ```
 
 **Reset password** — copy the contents of [recovery.html](../../supabase/templates/recovery.html):
 
 ```html
 <h2>Reset your password</h2>
-<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery">Reset password</a></p>
+<p>
+  <a
+    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery"
+    >Reset password</a
+  >
+</p>
 ```
 
 These links send a one-time token hash to the implemented `/auth/confirm` handler. It verifies the token and establishes a cookie session, then redirects to the library or `/auth/reset-password`. Arbitrary redirect destinations are not accepted. [Supabase password/confirmation flow](https://supabase.com/docs/guides/auth/passwords), [email templates](https://supabase.com/docs/guides/auth/auth-email-templates).
 
-When deploying, update both Site URL and `APP_BASE_URL` to your real HTTPS app origin, and allow its exact `/auth/confirm` URL. The current templates intentionally use Site URL: they do not support simultaneous localhost and production destinations on one Supabase project. Use a separate development project for local testing after production launch.
+When deploying, update both Site URL and `APP_BASE_URL` to your real HTTPS app origin, and allow its exact `/auth/confirm` URL. The current templates intentionally use Site URL: they do not support simultaneous localhost and production destinations on one Supabase project. For this prototype, reuse this project and switch Site URL back to localhost when testing local email links.
 
 ## 3. Prepare CLI credentials in your terminal
 
@@ -68,7 +78,7 @@ npx supabase migration list --linked
 npx supabase db push --linked --dry-run --skip-vault
 ```
 
-Review the linked project and dry-run output. It should list only [20261003152839_create_library_books.sql](../../supabase/migrations/20261003152839_create_library_books.sql). If the database already has a conflicting `library_books` table or other migration history, stop and reconcile it before applying; do not reset the database or force a history repair.
+Review the linked project and dry-run output. For initial setup, expect [20261003152839_create_library_books.sql](../../supabase/migrations/20261003152839_create_library_books.sql) and the [library search migration](06-library-search-mcp.md). If initial setup is already complete, only the search migration should be pending. If the database already has a conflicting `library_books` table or other migration history, stop and reconcile it before applying; do not reset the database or force a history repair.
 
 The migration creates `public.library_books`, its ownership index, RLS policies, and explicit authenticated grants. It supports owner-only SELECT and INSERT. UPDATE and DELETE remain denied until those features are implemented. It stores title/authors, status, nullable rating/ownership/pages, notes, creation timestamp, and a version. Later features will extend the schema through new migrations.
 
@@ -82,14 +92,6 @@ unset SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD
 
 The migration should appear in both local and remote history. Do not paste its SQL directly into the dashboard; the CLI preserves migration history. Applying the migration does not change your hosted auth settings or templates. [Migration workflow](https://supabase.com/docs/guides/deployment/database-migrations).
 
-The checked-in `database.types.ts` currently describes the reviewed migration by hand. After applying it, verify generated types before adopting them. With the scoped token available, generate into a temporary review file:
-
-```sh
-npx supabase gen types --linked --lang typescript --schema public > /tmp/library-agent-database.types.ts
-```
-
-Do not overwrite the checked-in file blindly: the application uses its `LibraryBookRow` alias too. Unset the token after this optional check.
-
 ## 5. Run the first book flow
 
 ```sh
@@ -101,13 +103,13 @@ npm run dev
 3. Click **Add a book**. Enter a disposable title and one author per line. Leave rating/pages/ownership unknown if you do not know them.
 4. Save; the book should appear in the library. Refresh and verify the same book remains.
 5. Sign out, then sign back in. Verify the book still appears. Signed-out requests to `/library`, `/library/new`, and password update must redirect to sign-in.
-6. Test **Forgot password?**, receive the recovery email, choose a new password, and verify sign-in using it. Password entries stay in the browser and are never returned in action state.
+   Password recovery is implemented; test it later if needed. It is not a gate for starting MCP work.
 
 On a failed save, the form retains input. Check the library before retrying an uncertain write. Retrying the same form and details keeps its book ID, preventing a duplicate insert. Changed details under a previously saved ID produce a conflict rather than overwrite a saved book.
 
-## 6. Verify two real accounts before expanding access
+## 6. Account isolation at the MCP milestone
 
-Use two confirmed disposable accounts. With default SMTP, both email recipients must be eligible organization addresses; wait for SMTP setup if that is impractical. Do not turn off RLS or email confirmation to bypass this.
+Verify with two confirmed disposable accounts when the first MCP tool is ready. The default sender can email existing organization team addresses. If a second eligible account is unavailable, record hosted isolation as unverified and arrange a second test account at that milestone; custom SMTP is not a prerequisite for building the tool. Keep RLS and email confirmation enabled.
 
 - A's book is visible to A after refresh and absent for B.
 - A direct authenticated Data API request as B cannot read A's book or insert a book owned by A.
@@ -116,7 +118,7 @@ Use two confirmed disposable accounts. With default SMTP, both email recipients 
 
 Local PostgreSQL tests exercise these policies, but hosted Auth/PostgREST and real account isolation still need this verification. MCP and plan-reference ownership will be checked when those routes exist. No automatic email or account creation was performed during implementation.
 
-## Local checks and limitations
+## Developer checks and limitations
 
 ```sh
 npm run lint
@@ -128,4 +130,8 @@ npm run build
 
 Tests use embedded PostgreSQL for the actual migration/RLS and mocked HTTP for save retry behavior. They do not call your hosted database. Docker is optional for these checks. `supabase/config.toml` and the checked-in email templates are prepared for later local Supabase testing; a full Docker stack has not been started or verified.
 
-See [verification](../verification.md) for actual results and remaining hosted checks.
+You do not need to rerun these developer checks before each demo. See [verification](../verification.md) for actual results and remaining hosted checks.
+
+## Next implementation step
+
+Once sign-in → add book → refresh works, apply the [library search migration and verify authenticated MCP](06-library-search-mcp.md). Next implementation is showcase ticket 02 for import/library management; agent integration follows ticket 03 using [OpenAI setup](03-openai.md).

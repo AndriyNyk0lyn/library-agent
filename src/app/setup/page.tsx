@@ -9,29 +9,32 @@ export default function SetupPage() {
     <>
       <PageHeading
         title="Setup"
-        description="Finish the service setup, then sign in and save your first book."
+        description="Connect your library, then continue with MCP and agent features."
       />
       <ol className="list-decimal space-y-6 pl-6 marker:font-semibold">
         <li className="pl-2">
           <h2 className="font-semibold">Finish email confirmation setup</h2>
           <p className="mt-1 max-w-2xl leading-relaxed text-muted">
-            Create a Supabase project using the database and authentication
-            guide in the project docs. Keep credentials in your local
-            environment file.
+            Use your existing Supabase project and its default email sender. Set
+            the confirmation URL and email templates using the first-library
+            guide in the project docs.
           </p>
         </li>
         <li className="pl-2">
           <h2 className="font-semibold">Apply the library migration</h2>
           <p className="mt-1 max-w-2xl leading-relaxed text-muted">
-            The next implementation step will let you sign in, save a book, and
-            read it back from your private library.
+            Follow the migration steps in the first-library guide, then sign in,
+            save a book, and refresh to confirm it persists.
           </p>
         </li>
         <li className="pl-2">
-          <h2 className="font-semibold">Prepare OpenAI when chat is added</h2>
+          <h2 className="font-semibold">Configure agent chat</h2>
           <p className="mt-1 max-w-2xl leading-relaxed text-muted">
-            OpenAI powers recommendations and planning through chat. You can set
-            it up after the library works.
+            Apply the chat/profile migration and configure the OpenAI key and
+            model using the chat setup guide. Recommendations use your saved
+            library. Apply the reading-plans migration using the plans setup
+            guide, then check and deliberately save schedules from a library
+            book.
           </p>
         </li>
       </ol>
