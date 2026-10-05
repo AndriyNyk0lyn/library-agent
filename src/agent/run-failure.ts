@@ -21,6 +21,8 @@ export function reportRunFailure(
       "RECOMMENDATION_NOT_FOUND",
       "RECOMMENDATION_READ_UNAVAILABLE",
       "RECOMMENDATION_INELIGIBLE",
+      "RECOMMENDATION_ALREADY_IN_LIBRARY",
+      "ANSWER_TOO_LONG",
       "PERSISTENCE_UNCERTAIN",
       "ACTIVITY_UNAVAILABLE",
     ])
@@ -61,9 +63,21 @@ export function reportRunFailure(
   const httpStatus = z
     .object({ status: z.number().int().min(100).max(599) })
     .safeParse(error);
+  // Match fixed SDK messages, never print the error text or extract model values.
+  const modelFailure =
+    error instanceof ModelBehaviorError
+      ? error.message ===
+        "Invalid output type: final assistant output did not match the expected schema."
+        ? "final_output_schema"
+        : error.message ===
+            "Model returned no final output for the structured output type."
+          ? "missing_final_output"
+          : "other_model_behavior"
+      : undefined;
   console.error("[reading-agent] run failed", {
     run_id: runId,
     code,
+    ...(modelFailure ? { model_failure: modelFailure } : {}),
     error_kind: errorKind.success ? errorKind.data : "UnknownError",
     ...(httpStatus.success ? { upstream_status: httpStatus.data.status } : {}),
   });

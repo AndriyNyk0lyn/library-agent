@@ -5,6 +5,8 @@ export function attemptedWrite(activity: Activity[]) {
     (event) =>
       event.phase === "started" &&
       (event.tool === "update_book" ||
+        event.tool === "add_catalog_book" ||
+        event.tool === "apply_library_update" ||
         event.tool === "update_reader_profile" ||
         event.tool === "save_reading_plan"),
   );

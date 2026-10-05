@@ -31,7 +31,12 @@ export function createLibraryMcpServer(reader: ReaderContext) {
         readOnlyHint: tool.readOnly,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: false,
+        openWorldHint: [
+          "search_catalog",
+          "get_catalog_book",
+          "add_catalog_book",
+          "search_web",
+        ].includes(tool.name),
       },
     })),
   }));

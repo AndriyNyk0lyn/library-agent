@@ -52,6 +52,16 @@ export default async function BookDetailsPage({
             <dd>{book.goodreads_date_added}</dd>
           </div>
         ) : null}
+        {book.catalog_metadata ? (
+          <div>
+            <dt>Catalog provenance</dt>
+            <dd>
+              <a href={book.catalog_metadata.source_url} className="text-link">
+                Open Library edition {book.catalog_metadata.edition_id}
+              </a>
+            </dd>
+          </div>
+        ) : null}
       </dl>
       <p className="mb-4">
         <Link href={`/plans/new?book_id=${book.id}`} className="text-link">

@@ -73,7 +73,7 @@ Calculate inclusive calendar days and `ceil(remaining_pages / available_days)` i
 
 ## Agent runs and persistence
 
-One runtime agent. The model proposes and explains; tools and deterministic code authorize, validate, and persist. Up to three unread eligible recommendations, with IDs and explicit uncertainty. External discovery occurs only when requested.
+One runtime agent. The model proposes and explains; tools and deterministic code authorize, validate, and persist. Three unread eligible recommendations by default, up to four when explicitly requested, with IDs and explicit uncertainty. Explicit library-only requests stay in saved records; general recommendations based on reading history permit external discovery, with separately labeled current-run catalog cards.
 
 Persist user-confirmed profile preferences and bounded conversation state. Display messages and SDK continuation records may need different storage; settle that in the continuation ticket. Do not claim full-library context or independent verification from the same agent's prose.
 
@@ -107,3 +107,5 @@ Verify supported SDK APIs and peer dependencies in official docs when installing
 After scaffolding, document real scripts for development, lint, typechecking, tests, and production build. Do not prescribe scripts as already existing. Use focused tests for risky rules and integration checks for ownership; see [verification](verification.md).
 
 Before broad implementation, prove the hosted MCP handshake, tool discovery, one authorized read, and two-user isolation. A browser that renders is not evidence the agent's server-to-server MCP calls work.
+
+The [expanded tools guide](setup/12-expanded-agent-tools.md) covers reader-managed patches, atomic bulk snapshots, edition addition and optional web search. `books/bulk-service.ts`, `books/catalog/tool-service.ts` and `web-search/service.ts` own these feature contracts. `agent/catalog-candidates.ts` resolves current-run external identities; final recommendation checks still cross real authenticated MCP HTTP.

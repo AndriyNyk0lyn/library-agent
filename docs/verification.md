@@ -144,3 +144,11 @@ Showcase ticket 04 is implementation-resolved. Added deterministic preview/savin
 ## Separate chat history implementation — 2026-10-04
 
 [History 02](../.scratch/chat-history-maintainability/issues/02-chat-history.md) is implementation-resolved: durable conversations/legacy backfill, stable links, bounded pagination, separate continuation and preserved reader-wide limits, tab drafts and GET-only recovery. See [migration/contracts and manual checks](setup/10-chat-history.md). Lint, typecheck, formatting, targeted Markdown formatting and diff whitespace checks passed. The new chat-conversations migration is **unapplied**. Existing tests are unchanged; no tests, builds, browser/functional QA, database queries, remote migration or paid-model requests were performed. Runtime behavior and isolation remain unverified.
+
+## 2026-10-05 — Optional Open Library implementation
+
+Ticket 06 adds disabled-by-default Open Library search, authenticated `search_catalog`, deliberate edition review/addition through the existing create-book service and separate insert-only provenance. Migration `20261005060400_optional_open_library.sql` is authored, not applied. See [setup/contracts and manual checks](setup/11-open-library.md). Static checks and self-review are recorded in the ticket; these do not establish provider/runtime behavior, persistence, model adherence, transport or reader isolation. No functional tests, builds, browser QA, database/advisor queries, migration application or live MCP/model calls were performed. Existing tests remain intact.
+
+## Expanded agent/MCP tools — 2026-10-05
+
+Catalog edition/add tools, expanded reader-field patches, atomic bulk updates, external recommendation cards and optional cited internet search are implemented. New local migration: `20261005064304_agent_tool_expansion.sql`, after optional catalog provenance. See [setup and remaining manual checks](setup/12-expanded-agent-tools.md). Static results are recorded in the [ticket](../.scratch/agent-tools/issues/01-expanded-tools.md); no SQL execution, real MCP/model behavior, functional tests, build, browser QA or account isolation was verified.

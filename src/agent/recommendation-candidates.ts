@@ -36,7 +36,11 @@ export class RecommendationCandidates {
         })),
       };
     }
-    if (tool === "get_book" || tool === "update_book") {
+    if (
+      tool === "get_book" ||
+      tool === "update_book" ||
+      tool === "add_catalog_book"
+    ) {
       const result = bookResultSchema.safeParse(output);
       if (!result.success || !result.data.ok) return;
       const book = result.data.book;

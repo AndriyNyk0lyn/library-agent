@@ -16,6 +16,8 @@ Your Supabase project and `.env.local` are already created by your report. Auth 
 
 [Local development](01-local-development.md) covers installation and checks. [Supabase setup](02-supabase.md) is the reference if you need to revisit project configuration.
 
+Optional: [Open Library discovery](11-open-library.md) can be deliberately enabled after applying its migration. It never blocks required showcase work. [Expanded agent/MCP tools](12-expanded-agent-tools.md) adds catalog addition, all reader-managed fields, bulk changes and optional internet search after its separate migration.
+
 ## Skip for this prototype
 
 Custom SMTP and email domains, custom app domains, separate staging/production projects, preview protection bypass setup, Docker-based local Supabase, CI/CD pipelines, analytics, and extra monitoring services are not setup requirements. Use the default email sender and a provider-assigned hosting URL.

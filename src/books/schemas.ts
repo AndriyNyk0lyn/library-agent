@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { catalogCandidateSchema } from "./catalog/schema";
 
 export const readingStatuses = [
   "want_to_read",
@@ -22,6 +23,26 @@ const optionalNumber = z
   );
 
 export const createBookSchema = z.object({
+  catalog_metadata: catalogCandidateSchema
+    .refine(
+      (candidate) =>
+        candidate.kind === "edition" &&
+        candidate.provider_id === candidate.edition_id &&
+        candidate.source_url ===
+          `https://openlibrary.org/books/${candidate.edition_id}`,
+      "Choose a precise edition.",
+    )
+    .optional(),
+  isbn10: z
+    .string()
+    .regex(/^[0-9]{9}[0-9X]$/)
+    .nullable()
+    .optional(),
+  isbn13: z
+    .string()
+    .regex(/^[0-9]{13}$/)
+    .nullable()
+    .optional(),
   id: z.uuid(),
   title: z.string().trim().min(1, "Enter a title.").max(500),
   authors: z
@@ -69,9 +90,12 @@ export function parseBookForm(form: FormData) {
 }
 
 export function sameBookCreation(
-  book: CreateBookInput,
+  book: Omit<CreateBookInput, "catalog_metadata"> & {
+    catalog_metadata?: unknown;
+  },
   input: CreateBookInput,
 ) {
+  const savedCatalog = catalogCandidateSchema.safeParse(book.catalog_metadata);
   return (
     book.id === input.id &&
     book.title === input.title &&
@@ -81,6 +105,12 @@ export function sameBookCreation(
     book.rating === input.rating &&
     book.owned === input.owned &&
     book.notes === input.notes &&
-    book.page_count === input.page_count
+    book.page_count === input.page_count &&
+    (input.isbn10 === undefined || book.isbn10 === input.isbn10) &&
+    (input.isbn13 === undefined || book.isbn13 === input.isbn13) &&
+    (input.catalog_metadata === undefined ||
+      (savedCatalog.success &&
+        JSON.stringify(savedCatalog.data) ===
+          JSON.stringify(input.catalog_metadata)))
   );
 }

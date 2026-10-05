@@ -30,3 +30,5 @@ Lifecycle is open → claimed → resolved (or closed with an explicit scope rea
 - [04 — Reading plans and validation-driven revision](issues/04-reading-plans.md): implementation resolved 2026-10-04; deterministic preview, durable saves/listing, MCP tools and bounded revision/chat results. Migration/runtime/isolation QA remains pending; Refactor 01 is the next required frontier, followed by History 02 and showcase 05.
 
 - [History 02 — Chat history and separate conversations](../chat-history-maintainability/issues/02-chat-history.md): implementation resolved 2026-10-04; saved conversation identity/backfill, stable links, pagination, separate bounded continuation, shared quotas and safe stream/draft recovery. New migration and runtime/isolation QA remain pending; showcase 05 is next.
+
+- [06 — Optional Open Library discovery and metadata](issues/06-optional-open-library.md): implementation resolved 2026-10-05; opt-in catalog UI/MCP, edition review/addition and separate provenance implemented. New migration, provider/runtime behavior and user QA remain pending; required showcase 05 remains independent.

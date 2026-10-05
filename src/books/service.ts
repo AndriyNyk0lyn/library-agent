@@ -190,6 +190,7 @@ export async function createBook(
     .from("library_books")
     .insert({ ...result.data, user_id: user.id })
     .select()
+    .abortSignal(AbortSignal.timeout(15000))
     .single();
   if (!error) return { book, error: null };
 
@@ -200,6 +201,7 @@ export async function createBook(
       .select()
       .eq("user_id", user.id)
       .eq("id", result.data.id)
+      .abortSignal(AbortSignal.timeout(15000))
       .maybeSingle();
     if (
       !readError &&

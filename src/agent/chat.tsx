@@ -32,6 +32,30 @@ import {
   type ChatEvent,
 } from "./schema";
 
+function linkedText(text: string) {
+  return text.split(/(https?:\/\/[^\s<>()]+)/g).map((part, index) => {
+    if (!URL.canParse(part)) return part;
+    const url = new URL(part);
+    if (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      !url.username &&
+      !url.password
+    )
+      return (
+        <a
+          key={index}
+          href={url.href}
+          className="text-link"
+          target="_blank"
+          rel="noreferrer"
+        >
+          {part}
+        </a>
+      );
+    return part;
+  });
+}
+
 const RunsContext = createContext<ChatRun[]>([]);
 const RecoveryContext = createContext(false);
 function ChatMessage() {
@@ -49,7 +73,7 @@ function ChatMessage() {
         {role === "user" ? "You" : "Reading companion"}
       </p>
       <div className="whitespace-pre-wrap">
-        <MessagePrimitive.Parts />
+        {run?.answer ? linkedText(run.answer) : <MessagePrimitive.Parts />}
       </div>
       {run && (
         <>
@@ -67,13 +91,31 @@ function ChatMessage() {
           )}
           {run.cards.map((card) => (
             <article
-              key={card.id}
+              key={"id" in card ? card.id : card.provider_id}
               className="mt-3 rounded border border-line p-3"
             >
-              <Link href={`/library/${card.id}`} className="text-link">
-                {card.title}
-              </Link>
-              <p className="text-sm text-muted">{card.authors.join(", ")}</p>
+              {"id" in card ? (
+                <Link href={`/library/${card.id}`} className="text-link">
+                  {card.title}
+                </Link>
+              ) : (
+                <>
+                  <p className="text-sm text-muted">
+                    Open Library · external suggestion · not saved
+                  </p>
+                  <a
+                    href={card.source_url}
+                    className="text-link"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {card.title}
+                  </a>
+                </>
+              )}
+              <p className="text-sm text-muted">
+                {card.authors.join(", ") || "Authors unknown"}
+              </p>
               <p>{card.reason}</p>
               <p className="mt-1 text-sm">Trade-off: {card.trade_off}</p>
               <p className="text-sm">Uncertainty: {card.uncertainty}</p>

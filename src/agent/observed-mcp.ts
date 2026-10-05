@@ -6,24 +6,34 @@ import {
 import { z } from "zod";
 import { getMcpEndpoint } from "@/lib/supabase/config";
 import { bookResultSchema } from "@/books/management-schema";
+import { librarySearchResultSchema } from "@/books/search-schema";
+import type { CatalogCandidate } from "@/books/catalog/schema";
 import { activitySchema, type Activity } from "./schema";
 import { RecommendationCandidates } from "./recommendation-candidates";
+import { CatalogCandidates } from "./catalog-candidates";
+import {
+  webSearchResultSchema,
+  type webSourceSchema,
+} from "@/web-search/schema";
 import { PlanResults } from "./plan-results";
 
 // Await durable activity around the real HTTP call, including server-side card checks.
 export class ObservedMcp extends MCPServerStreamableHttp {
   attemptedWrite = false;
   readonly plans = new PlanResults();
+  readonly catalog: CatalogCandidates;
+  readonly webSources = new Map<string, z.output<typeof webSourceSchema>>();
   constructor(
     token: string,
     private signal: AbortSignal,
     private candidates: RecommendationCandidates,
     private activity: (activity: Activity) => Promise<void>,
+    referencePrefix: string,
   ) {
     super({
       name: "Reader library",
       url: getMcpEndpoint().href,
-      timeout: 12000,
+      timeout: 22000,
       requestInit: { headers: { Authorization: `Bearer ${token}` } },
       fetch: (input: string | URL | Request, init?: RequestInit) =>
         fetch(input, {
@@ -31,7 +41,7 @@ export class ObservedMcp extends MCPServerStreamableHttp {
           redirect: "error",
           signal: AbortSignal.any([
             signal,
-            AbortSignal.timeout(12000),
+            AbortSignal.timeout(22000),
             ...(init?.signal ? [init.signal] : []),
           ]),
         }),
@@ -46,6 +56,7 @@ export class ObservedMcp extends MCPServerStreamableHttp {
         dontLogToolData: true,
       },
     });
+    this.catalog = new CatalogCandidates(referencePrefix);
   }
   override async callToolResult(
     name: string,
@@ -71,7 +82,17 @@ export class ObservedMcp extends MCPServerStreamableHttp {
     }
     const result = await this.callObserved(name, args, meta, options);
     this.plans.observe(name, result.structuredContent, args);
-    const annotated = this.candidates.annotate(name, result.structuredContent);
+    if (name === "search_web") {
+      const web = webSearchResultSchema.safeParse(result.structuredContent);
+      if (web.success && web.data.ok)
+        for (const source of web.data.sources) {
+          if (this.webSources.size < 10)
+            this.webSources.set(source.url, source);
+        }
+    }
+    const annotated =
+      this.candidates.annotate(name, result.structuredContent) ??
+      this.catalog.annotate(name, result.structuredContent);
     return annotated
       ? {
           ...result,
@@ -83,6 +104,29 @@ export class ObservedMcp extends MCPServerStreamableHttp {
   async verifyBook(id: string) {
     const result = await this.callObserved("get_book", { id });
     return bookResultSchema.parse(result.structuredContent);
+  }
+  async verifyExternalCandidate(candidate: CatalogCandidate) {
+    const response = await this.callObserved("search_my_library", {
+      query: candidate.title.slice(0, 200),
+      limit: 50,
+    });
+    const library = librarySearchResultSchema.parse(response.structuredContent);
+    if (!library.ok || library.hasMore)
+      throw new Error("RECOMMENDATION_READ_UNAVAILABLE");
+    const normalize = (value: string) => value.trim().toLocaleLowerCase("en");
+    if (
+      library.books.some(
+        (book) =>
+          normalize(book.title) === normalize(candidate.title) &&
+          (candidate.authors.length === 0 ||
+            candidate.authors.some((author) =>
+              book.authors.some(
+                (saved) => normalize(saved) === normalize(author),
+              ),
+            )),
+      )
+    )
+      throw new Error("RECOMMENDATION_ALREADY_IN_LIBRARY");
   }
   private async callObserved(
     name: string,
@@ -96,6 +140,8 @@ export class ObservedMcp extends MCPServerStreamableHttp {
     try {
       if (
         tool === "update_book" ||
+        tool === "add_catalog_book" ||
+        tool === "apply_library_update" ||
         tool === "update_reader_profile" ||
         tool === "save_reading_plan"
       )

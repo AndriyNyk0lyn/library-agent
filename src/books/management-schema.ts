@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { catalogCandidateSchema } from "./catalog/schema";
 import { readingStatuses } from "./schemas";
 import { libraryBookSummarySchema } from "./search-schema";
 
@@ -11,6 +12,7 @@ export const bookDateSchema = z.iso.date().refine((value) => {
   );
 }, "Enter a valid calendar date.");
 export const bookDetailsSchema = libraryBookSummarySchema.extend({
+  catalog_metadata: catalogCandidateSchema.nullable().optional(),
   notes: z.string().max(20000),
   isbn10: z.string().nullable(),
   isbn13: z.string().nullable(),
@@ -25,6 +27,29 @@ export type BookDetails = z.output<typeof bookDetailsSchema>;
 export const getBookSchema = z.strictObject({ id: z.uuid() });
 export const bookPatchSchema = z
   .strictObject({
+    title: z.string().trim().min(1).max(500).optional(),
+    authors: z
+      .array(z.string().trim().min(1).max(200))
+      .min(1)
+      .max(10)
+      .optional(),
+    isbn10: z
+      .string()
+      .regex(/^[0-9]{9}[0-9X]$/)
+      .nullable()
+      .optional(),
+    isbn13: z
+      .string()
+      .regex(/^[0-9]{13}$/)
+      .nullable()
+      .optional(),
+    goodreads_book_id: z
+      .string()
+      .regex(/^[0-9]{1,30}$/)
+      .nullable()
+      .optional(),
+    imported_shelves: z.array(z.string().max(200)).max(100).optional(),
+    goodreads_date_added: bookDateSchema.nullable().optional(),
     status: z.enum(readingStatuses).optional(),
     rating: z.number().min(0.5).max(5).multipleOf(0.5).nullable().optional(),
     owned: z.boolean().nullable().optional(),

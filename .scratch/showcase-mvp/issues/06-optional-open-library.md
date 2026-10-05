@@ -4,11 +4,11 @@
 
 **Blocked by:** 03 — Agent chat, recommendations, and persistent memory
 
-**Status:** open
+**Status:** resolved
 
 **Triage:** ready-for-agent
 
-**Assignee:** unclaimed
+**Assignee:** Codex 2026-10-05
 
 ## Start a fresh session
 
@@ -29,12 +29,12 @@ This is a maybe-ticket: the user approved publishing it, not making it a prerequ
 
 ## Acceptance criteria
 
-- [ ] Explicit discovery returns bounded, normalized, labeled external candidates with source provenance.
-- [ ] `search_catalog` follows the existing authenticated MCP contract and returns honest upstream errors.
-- [ ] A reader deliberately adds a candidate or fills chosen missing metadata with edition disambiguation.
-- [ ] Personal data and existing user-confirmed values remain protected by version/ownership rules.
-- [ ] Main library/import behavior remains available during catalog failure and when this ticket is not implemented.
-- [ ] Docs identify this capability as optional and name only the implemented provider.
+- [x] Explicit discovery returns bounded, normalized, labeled external candidates with source provenance.
+- [x] `search_catalog` follows the existing authenticated MCP contract and returns honest upstream errors.
+- [x] A reader deliberately adds a candidate or fills chosen missing metadata with edition disambiguation.
+- [x] Personal data and existing user-confirmed values remain protected by version/ownership rules.
+- [x] Main library/import behavior remains available during catalog failure and when this ticket is not implemented.
+- [x] Docs identify this capability as optional and name only the implemented provider.
 
 ## Completion and handoff
 
@@ -45,3 +45,15 @@ Review the actual changes against this ticket and the shared brief. Fix concrete
 ### 2026-10-04 — Published
 
 Approved by the user as part of five required showcase slices plus one optional catalog slice. Functional testing and browser QA remain with the user.
+
+### 2026-10-05 — Implementation resolved; user QA pending
+
+- Implemented optional Open Library only, disabled by default. `searchBooks` / `getBookDetails` normalize bounded external candidates with identifiers/provenance and work-versus-edition identity. Search does not supply work-level pages/ISBNs; deliberate selection loads exact edition metadata and bounded author names. Unknown fields remain unknown. Optional cover URLs do not need loading; descriptions are plain text behind a spoiler disclosure.
+- Added authenticated `search_catalog` to the existing MCP registry only when enabled, with query, optional author/ISBN and limit 1–10 (default 5). Existing bearer identity checks and actual agent-to-MCP HTTP remain. Safe activity schemas/labels and SQL activity allowlist admit its name without payload logging. Agent instructions allow external discovery only on explicit request, label candidates, and keep ordinary recommendations grounded in eligible saved unread books. External chat results use prose; the simple catalog UI provides deliberate selection/addition rather than a new structured-chat persistence contract.
+- `/library/catalog` and `/library/catalog/[edition]` provide search/loading/empty/error, edition identity/ISBN/publisher/date/language review and normal book entry. The existing BookForm accepts scoped initial fields and an action; shared `createBook` owns actual insertion, server-derived owner, RLS and stable UUID retry recovery. The page action captures the reviewed edition snapshot in its encrypted closure, authenticates again through the helper and retains drafts after uncertain saves. Save does not refetch Open Library; retry comparison includes ISBNs and canonical provenance. Creation/recovery reads now have 15-second storage deadlines. The saved detail page shows the source link.
+- `20261005060400_optional_open_library.sql` is authored **not applied**. It adds constrained nullable JSONB edition provenance with only authenticated INSERT granted, covered by existing owner RLS. No provenance UPDATE permission, new private table, personal-field replacement, version bypass or change to import/mutation coordination. It replaces only the safe activity name allowlist while retaining auth, run capability, expiry/status and count predicates. Reviewed types and output schemas accept absent provenance in older saved mutation outcomes. Existing books are never enriched/replaced: the deliberate-add path meets the ticket's add-or-fill criterion; metadata fill/replacement and automatic duplicate merging are not implemented.
+- Added server-only `OPEN_LIBRARY_ENABLED` (exact `true`) and `OPEN_LIBRARY_CONTACT_EMAIL`; examples default to disabled. Public upstream JSON cache is limited to 100 entries/five minutes. Upstream requests have seven-second timeouts, 512 KiB response bounds, at least 1.1-second process-local spacing, one-minute 429 cooldown and no automatic retries. Edition details have a 15-second total deadline. Cache/admission are per process; no claim of distributed rate enforcement. Catalog failure returns honest UPSTREAM_UNAVAILABLE; library/import/chat do not require upstream calls, and disabled operation does not require this migration.
+- No new dependencies or SDK import changes. Verified official Open Library Search/edition APIs and rate/usage guidance, Supabase RLS/grants, Next.js Form/Server Action closure contracts; read installed versions and the Supabase changelog. Local CLI help/migration creation needed approved local telemetry filesystem access; no remote resource or database operation was performed. No applicable root ADR was found.
+- Focused self-review and React checklist covered auth/ownership, grants, provenance separation, bounded normalization/cache/deadlines, safe text, current-run recommendation separation, retry snapshots, missing authors, stale/version preservation and accessible states. Fixed initial typecheck null narrowing, disabled edition prefetch to avoid lookup before selection, replaced unencrypted bound snapshot arguments with an encrypted page closure, minimized form serialization, and made stored-provenance comparison validate/normalize instead of throwing. No tests were added/changed.
+- Static checks passed: `npm run typecheck` (Next type generation and strict TypeScript); `npm run lint` (zero warnings); `npm run format:check`; final focused ESLint for creation/schema/types; targeted changed-Markdown formatting/check. Initial typecheck's nullable book error was fixed before passing. Generated next-env route-path changes were restored to keep the diff scoped.
+- Updated [optional setup/contracts/manual checks](../../../docs/setup/11-open-library.md), README, setup index, chat extension docs, showcase index and verification record. **User next actions:** review/apply the new migration after existing migrations, deliberately configure enable/contact values, restart, then perform the guide's checks. Migration execution, provider behavior, edition correctness, UI save/retry/refresh, real MCP/model explicit-request behavior, failure isolation and two-account UI/MCP/Data API isolation remain unverified. No automated/functional tests, builds, browser QA, database/advisor queries, migration application, live MCP/model calls, provisioning or deployment occurred. Acceptance boxes mean implementation completion, not verified runtime behavior.

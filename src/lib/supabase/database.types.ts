@@ -1,6 +1,6 @@
 import type { SavedPlan } from "@/plans/schema";
 
-// Reviewed public RPC contracts through the chat_conversations migration.
+// Reviewed public contracts through optional_open_library; old mutation outcomes may omit catalog metadata.
 export type LibraryBookRow = {
   id: string;
   user_id: string;
@@ -11,6 +11,7 @@ export type LibraryBookRow = {
   owned: boolean | null;
   notes: string;
   page_count: number | null;
+  catalog_metadata?: Json | null;
   isbn10: string | null;
   isbn13: string | null;
   goodreads_book_id: string | null;
@@ -41,6 +42,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 type BookMetadata =
+  | "catalog_metadata"
   | "isbn10"
   | "isbn13"
   | "goodreads_book_id"
@@ -90,6 +92,15 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      preview_library_update: { Args: { p_input: Json }; Returns: Json };
+      apply_library_update: {
+        Args: { p_preview_id: string; p_operation_id: string };
+        Returns: Json;
+      };
+      add_catalog_book: {
+        Args: { p_input: Json; p_candidate: Json };
+        Returns: Json;
+      };
       save_reading_plan: { Args: { p_input: Json }; Returns: Json };
       list_reading_plans: {
         Args: {

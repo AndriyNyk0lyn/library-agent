@@ -30,15 +30,21 @@ export async function executeChat(
 ) {
   const config = agentConfig();
   const candidates = new RecommendationCandidates(runId.slice(0, 8));
-  const mcp = new ObservedMcp(token, signal, candidates, async (activity) => {
-    await recordActivity(reader, runId, activity, runKey);
-    emit({
-      type: activity.phase === "started" ? "tool_started" : "tool_completed",
-      run_id: runId,
-      conversation_id: conversationId,
-      activity,
-    });
-  });
+  const mcp = new ObservedMcp(
+    token,
+    signal,
+    candidates,
+    async (activity) => {
+      await recordActivity(reader, runId, activity, runKey);
+      emit({
+        type: activity.phase === "started" ? "tool_started" : "tool_completed",
+        run_id: runId,
+        conversation_id: conversationId,
+        activity,
+      });
+    },
+    runId.slice(0, 8),
+  );
   const provider = new OpenAIProvider({
     apiKey: config.key,
     useResponses: true,
@@ -82,12 +88,17 @@ export async function executeChat(
     await result.completed;
     const answer = agentAnswerSchema.parse(result.finalOutput);
     const cards = await validateRecommendationCards(answer, candidates, mcp);
+    const sources = [...mcp.webSources.values()];
+    const finalMessage = sources.length
+      ? `${answer.message}\n\nWeb sources:\n${sources.map((source) => `${source.title} — ${source.url}`).join("\n")}`
+      : answer.message;
+    if (finalMessage.length > 12000) throw new Error("ANSWER_TOO_LONG");
     signal.throwIfAborted();
     // Remove no tool history: manual continuation includes SDK calls, results and assistant items.
     const batch = continuationBatch(result.history, history.length);
     const saved = await finishRun(reader, runId, runKey, {
       status: "completed",
-      answer: answer.message,
+      answer: finalMessage,
       cards,
       plans: mcp.plans.displays,
       history: batch,
@@ -100,7 +111,7 @@ export async function executeChat(
       type: "message_delta",
       run_id: runId,
       conversation_id: conversationId,
-      delta: answer.message,
+      delta: finalMessage,
     });
     const snapshot = await loadChat(reader, conversationId);
     const run = snapshot.runs.find((run) => run.id === runId);

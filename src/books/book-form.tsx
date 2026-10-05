@@ -2,21 +2,33 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { addBook } from "./actions";
+import { addBook, type BookFormState } from "./actions";
+import type { CreateBookInput } from "./schemas";
 import { readingStatuses, statusLabels } from "./schemas";
 import { FormFeedback } from "@/components/ui/form-feedback";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export function BookForm({ bookId }: { bookId: string }) {
-  const [state, action] = useActionState(addBook, {});
+export function BookForm({
+  bookId,
+  initialDetails,
+  saveAction = addBook,
+}: {
+  bookId: string;
+  initialDetails?: Pick<CreateBookInput, "title" | "authors" | "page_count">;
+  saveAction?: (
+    previous: BookFormState,
+    form: FormData,
+  ) => Promise<BookFormState>;
+}) {
+  const [state, action] = useActionState(saveAction, {});
   const [fields, setFields] = useState({
-    title: "",
-    authors: "",
+    title: initialDetails?.title ?? "",
+    authors: initialDetails?.authors.join("\n") ?? "",
     status: "want_to_read",
     rating: "",
     owned: "unknown",
     notes: "",
-    page_count: "",
+    page_count: initialDetails?.page_count?.toString() ?? "",
   });
   function updateField(
     event: React.ChangeEvent<
