@@ -4,7 +4,16 @@ import { z } from "zod";
 import type { ReaderContext } from "@/books/service";
 import type { PlanDisplay } from "@/plans/schema";
 import type { Json } from "@/lib/supabase/database.types";
-import { snapshotSchema, type Activity, type ChatRun } from "./schema";
+import {
+  snapshotSchema,
+  conversationListSchema,
+  conversationSchema,
+  type Activity,
+  type ChatRun,
+  type ChatSnapshot,
+  type historyCursorSchema,
+  type conversationCursorSchema,
+} from "./schema";
 
 // JSON round-trip strips SDK objects and validates the database boundary without a cast.
 const jsonSchema: z.ZodType<Json> = z.lazy(() =>
@@ -21,21 +30,54 @@ export function asJson(value: unknown): Json {
   return jsonSchema.parse(JSON.parse(JSON.stringify(value)));
 }
 const historyBatchSchema = z.array(protocol.ModelItem).max(200);
-export async function loadChat(reader: ReaderContext) {
+export class ConversationNotFound extends Error {}
+export async function loadConversations(
+  reader: ReaderContext,
+  cursor?: z.output<typeof conversationCursorSchema>,
+) {
   const { data, error } = await reader.supabase
-    .rpc("chat_snapshot")
+    .rpc("list_chat_conversations", {
+      p_as_of: cursor?.as_of,
+      p_before_at: cursor?.at,
+      p_before_id: cursor?.id,
+    })
+    .abortSignal(AbortSignal.timeout(10000));
+  if (error) throw new Error("CONVERSATIONS_UNAVAILABLE");
+  return conversationListSchema.parse(data);
+}
+export async function createConversation(reader: ReaderContext, id: string) {
+  const { data, error } = await reader.supabase
+    .rpc("create_chat_conversation", { p_id: id })
+    .abortSignal(AbortSignal.timeout(10000));
+  if (error) throw new Error("CREATION_UNCERTAIN");
+  return conversationSchema.parse(data);
+}
+export async function loadChat(
+  reader: ReaderContext,
+  conversationId: string,
+  cursor?: z.output<typeof historyCursorSchema>,
+): Promise<ChatSnapshot> {
+  const { data, error } = await reader.supabase
+    .rpc("chat_snapshot", {
+      p_conversation_id: conversationId,
+      p_before_at: cursor?.at,
+      p_before_id: cursor?.id,
+    })
     .abortSignal(AbortSignal.timeout(10000));
   if (error)
     throw new Error(
       "Could not load chat. Apply the chat migration and try again.",
     );
+  if (z.object({ code: z.literal("NOT_FOUND") }).safeParse(data).success)
+    throw new ConversationNotFound();
   return snapshotSchema.parse(data);
 }
 export async function loadHistory(
   reader: ReaderContext,
+  conversationId: string,
 ): Promise<AgentInputItem[]> {
   const { data, error } = await reader.supabase
-    .rpc("agent_history")
+    .rpc("agent_history", { p_conversation_id: conversationId })
     .abortSignal(AbortSignal.timeout(10000));
   if (error) throw new Error("HISTORY_UNAVAILABLE");
   const batches = z.array(historyBatchSchema).max(5).parse(data);
@@ -101,6 +143,7 @@ export async function finishRun(
 
 export async function persistFailedRun(
   reader: ReaderContext,
+  conversationId: string,
   runId: string,
   runKey: string,
   interrupted: boolean,
@@ -118,7 +161,9 @@ export async function persistFailedRun(
   });
   if (!saved) return;
   try {
-    return (await loadChat(reader)).runs.find((run) => run.id === runId);
+    return (await loadChat(reader, conversationId)).runs.find(
+      (run) => run.id === runId,
+    );
   } catch {
     // Final status may be saved while its read is unavailable; keep recovery required.
     return undefined;

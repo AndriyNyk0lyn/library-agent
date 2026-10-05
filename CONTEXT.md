@@ -30,3 +30,6 @@ _Avoid_: Guaranteed completion for a proposed schedule.
 
 **Import**: A deliberate ingestion of a Goodreads CSV snapshot with preview and a result summary.
 _Avoid_: Sync for a one-time CSV import.
+
+**Conversation**: A saved reader-owned chat with its own display history and bounded recent model context. Explicit reader preferences, library records and saved plans remain shared.
+_Avoid_: Assuming every displayed past message is available to the model.

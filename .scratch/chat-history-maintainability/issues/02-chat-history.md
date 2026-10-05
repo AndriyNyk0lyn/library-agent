@@ -4,11 +4,11 @@
 
 **Blocked by:** [01 — Refactor agent and MCP for maintainability](01-agent-mcp-refactor.md), including its independent review and handoff.
 
-**Status:** open
+**Status:** resolved
 
 **Triage:** ready-for-agent
 
-**Assignee:** unclaimed
+**Assignee:** Codex — 2026-10-04 chat history session
 
 ## Start a fresh session
 
@@ -32,14 +32,14 @@ Chat currently persists one conversation per reader through private run records.
 
 ## Acceptance criteria
 
-- [ ] Existing retained chat data survives migration into an owner-scoped conversation with stable run IDs and results.
-- [ ] A reader can create, browse, reopen by link and resume separate saved conversations, including after refresh.
-- [ ] Older conversations/messages load through bounded stable pagination with correct ordering and accessible loading/error/empty states.
-- [ ] Each conversation uses only its own bounded SDK continuation; durable reader preferences remain shared.
-- [ ] Authorization and related ownership are enforced in server/database boundaries; private continuation and capabilities are never exposed.
-- [ ] Switching conversations and recovering a disconnected run cannot mix events, bypass reader-wide limits or automatically replay mutations.
-- [ ] Existing activity, recommendation/plan cards, explicit writes and uncertainty states remain supported.
-- [ ] Focused self-review and applicable lint/type/format checks are recorded; documentation explains migrations, retention, context limits and remaining user verification.
+- [x] Existing retained chat data survives migration into an owner-scoped conversation with stable run IDs and results.
+- [x] A reader can create, browse, reopen by link and resume separate saved conversations, including after refresh.
+- [x] Older conversations/messages load through bounded stable pagination with correct ordering and accessible loading/error/empty states.
+- [x] Each conversation uses only its own bounded SDK continuation; durable reader preferences remain shared.
+- [x] Authorization and related ownership are enforced in server/database boundaries; private continuation and capabilities are never exposed.
+- [x] Switching conversations and recovering a disconnected run cannot mix events, bypass reader-wide limits or automatically replay mutations.
+- [x] Existing activity, recommendation/plan cards, explicit writes and uncertainty states remain supported.
+- [x] Focused self-review and applicable lint/type/format checks are recorded; documentation explains migrations, retention, context limits and remaining user verification.
 
 ## Completion and handoff
 
@@ -48,3 +48,15 @@ Review actual changes for related ownership, migration/backfill safety, stable p
 ## Comments
 
 - 2026-10-04: Scope and order approved by the user. Separate browsable conversations extend existing single-conversation persistence; refactoring comes first.
+
+### 2026-10-04 — Implementation resolved; user QA pending
+
+- Added `/chat` browsing/New chat and `/chat/<conversation UUID>` stable selected links, simple responsive navigation, selected state, loading/empty/end/unavailable/retry states, and older conversation/message loading. Titles collapse first-message whitespace and cap at 80 characters without a model. Activity means creation/latest admission. assistant-ui continues to render the application-owned transcript and existing activity/recommendation/plan cards.
+- CLI-created **unapplied** migration `20261004180252_chat_conversations.sql`; apply **after** `20261004154621_reading_plans.sql` with matching code and restart. Backfill associates all existing runs with one conversation per reader, preserving IDs/status/results/activity/capabilities/retained SDK history; no applied migration was rewritten. Private conversation table uses RLS/revoked direct grants, explicit authenticated RPC grants and owner-scoped definer implementations behind invoker wrappers. Composite owner/conversation FK enforces related ownership. Server cookie verification/origin checks remain independent; foreign/missing/expired conversation links return safe 404. No owner/provider history/usage/model/capability enters browser results.
+- New RPCs `create_chat_conversation(p_id)` and `list_chat_conversations(p_as_of,p_before_at,p_before_id)`; snapshot takes conversation and optional exclusive timestamp/UUID cursor, and history takes conversation. Browser creation POST carries retry-safe conversation UUID; turn POST and every SSE/display run carry conversation UUID. List/message pages are capped at 20 with one-row lookahead. Conversation pagination reconstructs activity at a fixed first-page cutoff, preventing later admissions from moving rows between pages; message order uses immutable creation/UUID. Retention can remove expired rows during paging. Cursor inputs are bounded/validated and never authorize access.
+- Creation stores its identity in tab session storage before POST and retries explicitly with that same identity after uncertainty/refresh. Storage failure blocks creation before submission. Drafts stay separate per chat in tab storage, including input during a switched/interrupted submission; unavailable storage has visible copy-before-navigation guidance. Closing the tab loses drafts/pending creation identity, so inspect saved chats before starting another creation. Keyed selected transcripts abort their old receiver on switch and guard mounted state/event/result IDs; late callbacks cannot mutate the new transcript. No automatic POST/write retry was introduced.
+- GET-only latest recovery merges saved outcomes by ID and restarts older-page navigation to reach gaps created by other tabs. Older pages preserve known/streamed results, draft, selected chat and known active state; duplicates are removed and scroll position is adjusted. New chat scopes only conversational context. Reader profile/library/plans remain shared. SDK continuation retains five whole terminal exchanges per conversation, 200-item/512 KiB exchange and 512 KiB total bounds; failures/interruption retain uncertainty without incomplete call replay. Pruning ranks each conversation separately. Reader-wide lock/unique active index, ten/hour, lease/deadline, capability-gated finalization and real MCP HTTP remain intact.
+- Retained the 30-day lazy owner-scoped run policy. Empty conversation records expire after 30 days of inactivity once no retained runs remain. No scheduled cleanup or permanent-history claim. UI/setup explain bounded model context separately from older display history. No book/profile/plan MCP changes, dependencies, model API changes or environment variables were added.
+- Focused self-review examined actual migration/backfill, ownership/FK/grants, reader-wide atomic admission/capabilities, per-conversation pruning, pagination under new activity, event/result routing, drafts, Stop/unmount and post-save failure recovery. Fixed recovery replacing older loaded messages, stale page overwrites, pagination gaps after other-tab activity, stale navigation titles/order, lost in-flight input on switch, and silent tab-storage failure. Added final result-ID checks. Typecheck passed initially; a subsequent lint finding for synchronous effect error state was fixed with deferred external-storage error reporting. No unresolved concrete self-review finding remains; SQL/UI/SDK timing still requires user verification.
+- Final static checks: `npm run lint` passed (zero warnings); `npm run typecheck` passed (`next typegen` + `tsc --noEmit`); `npm run format:check` passed; targeted changed Markdown Prettier check passed; `git diff --check` passed. Type generation's incidental `next-env.d.ts` change was restored. Existing tests were preserved; none added/run. No builds, functional/browser QA, database/advisor queries, remote migrations, paid-model requests, provisioning or deployment. Supabase CLI help/new used approved filesystem access for local telemetry; no remote operation occurred.
+- Updated [chat-history setup/contracts and user checks](../../../docs/setup/10-chat-history.md), README/setup index, domain glossary, engineering navigation, prior chat setup and showcase narrative. Consulted official Supabase RLS/changelog and assistant-ui external-store guidance plus installed composer/runtime declarations. The Markdown changelog endpoint was unavailable; HTML was used. **User next actions:** review/apply the migration, restart, verify legacy preservation, separate contexts/shared preferences, more-than-20 paging, creation retry/refresh, drafts/switching/Stop/disconnect, cross-tab limits/expiry, and real two-account route/RPC/Data API isolation. Acceptance boxes mean implemented behavior, not proven runtime/hosted behavior. Showcase 05 is next.

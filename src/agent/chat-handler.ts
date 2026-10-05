@@ -2,8 +2,13 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { chatError, chatReader, readChatBody } from "@/agent/http";
-import { loadChat } from "@/agent/storage";
-import { turnSchema, chatEventSchema, type ChatEvent } from "@/agent/schema";
+import { loadChat, ConversationNotFound } from "@/agent/storage";
+import {
+  historyCursorSchema,
+  turnSchema,
+  chatEventSchema,
+  type ChatEvent,
+} from "@/agent/schema";
 import { agentConfig } from "./config";
 import { executeChat } from "./runner";
 
@@ -11,10 +16,26 @@ export async function getChat(request: Request) {
   try {
     const reader = await chatReader(request);
     if (reader instanceof Response) return reader;
-    return Response.json(await loadChat(reader), {
+    const url = new URL(request.url);
+    const conversation = z
+      .uuid()
+      .safeParse(url.searchParams.get("conversation_id"));
+    let cursor;
+    try {
+      const raw = url.searchParams.get("cursor");
+      if (raw && raw.length > 1000) throw new Error("CURSOR_LIMIT");
+      cursor = raw ? historyCursorSchema.parse(JSON.parse(raw)) : undefined;
+    } catch {
+      return chatError(400, "Invalid history cursor.");
+    }
+    if (!conversation.success)
+      return chatError(400, "Choose a valid conversation.");
+    return Response.json(await loadChat(reader, conversation.data, cursor), {
       headers: { "Cache-Control": "private, no-store" },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof ConversationNotFound)
+      return chatError(404, "Conversation not found or no longer retained.");
     return chatError(
       503,
       "Could not load chat. Check the chat migration and reload.",
@@ -37,7 +58,7 @@ export async function postChat(request: Request) {
     } catch {
       return chatError(
         400,
-        "Send a message of 1–4,000 characters and a valid run ID.",
+        "Send a message of 1–4,000 characters and valid conversation and run IDs.",
       );
     }
     let model: string;
@@ -53,6 +74,7 @@ export async function postChat(request: Request) {
     const runKey = randomBytes(32).toString("hex");
     const { data, error } = await reader.supabase
       .rpc("start_agent_run", {
+        p_conversation_id: input.conversation_id,
         p_id: input.run_id,
         p_input: input.message,
         p_model: model,
@@ -72,8 +94,13 @@ export async function postChat(request: Request) {
       .parse(data);
     if (!started.ok)
       return chatError(
-        started.code === "QUOTA_EXCEEDED" ? 429 : 409,
+        started.code === "NOT_FOUND"
+          ? 404
+          : started.code === "QUOTA_EXCEEDED"
+            ? 429
+            : 409,
         {
+          NOT_FOUND: "Conversation not found or no longer retained.",
           QUOTA_EXCEEDED:
             "You have reached 10 runs in the last hour. Try later.",
           RUN_ACTIVE:
@@ -100,10 +127,15 @@ export async function postChat(request: Request) {
             controller.abort();
           }
         };
-        emit({ type: "run_started", run_id: input.run_id });
+        emit({
+          type: "run_started",
+          run_id: input.run_id,
+          conversation_id: input.conversation_id,
+        });
         void executeChat(
           reader,
           reader.token,
+          input.conversation_id,
           input.run_id,
           runKey,
           input.message,
@@ -114,6 +146,7 @@ export async function postChat(request: Request) {
             emit({
               type: "run_failed",
               run_id: input.run_id,
+              conversation_id: input.conversation_id,
               message:
                 "The run outcome is uncertain. Reload saved status and check updates before sending again.",
             });

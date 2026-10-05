@@ -13,7 +13,7 @@ Seven required implementation slices and one optional catalog slice, approved 20
 | [05 — Hosted showcase and handoff](issues/05-hosted-showcase.md)                                                  | History 02  | Yes      |
 | [06 — Optional Open Library discovery and metadata](issues/06-optional-open-library.md)                           | 03          | No       |
 
-Select an open, unclaimed ticket whose blockers are resolved. Tickets 01–04 are implementation-resolved; start with Refactor 01, then History 02, then showcase 05. Ticket 06 can be explicitly selected after 03 and never blocks required showcase work.
+Select an open, unclaimed ticket whose blockers are resolved. Tickets 01–04, Refactor 01 and History 02 are implementation-resolved; showcase 05 is next. Runtime QA and migration application remain pending. Ticket 06 can be explicitly selected after 03 and never blocks required showcase work.
 
 Suggested new-session prompt: “Implement the selected ticket. Read its shared brief and completed blocker handoffs, follow the manual-testing boundary, perform focused self-review, and record the handoff in the ticket.” Attach or name the selected ticket in that session.
 
@@ -28,3 +28,5 @@ Lifecycle is open → claimed → resolved (or closed with an explicit scope rea
 - [03 — Agent chat, recommendations, and persistent memory](issues/03-agent-chat-memory.md): implementation resolved 2026-10-04; real MCP agent runner, profile memory, bounded continuation and durable limits/recovery. Migration/model/runtime/isolation QA remains pending. Ticket 04 builds on this contract.
 
 - [04 — Reading plans and validation-driven revision](issues/04-reading-plans.md): implementation resolved 2026-10-04; deterministic preview, durable saves/listing, MCP tools and bounded revision/chat results. Migration/runtime/isolation QA remains pending; Refactor 01 is the next required frontier, followed by History 02 and showcase 05.
+
+- [History 02 — Chat history and separate conversations](../chat-history-maintainability/issues/02-chat-history.md): implementation resolved 2026-10-04; saved conversation identity/backfill, stable links, pagination, separate bounded continuation, shared quotas and safe stream/draft recovery. New migration and runtime/isolation QA remain pending; showcase 05 is next.

@@ -1,6 +1,6 @@
 import type { SavedPlan } from "@/plans/schema";
 
-// Reviewed public RPC contracts through the reading_plans migration.
+// Reviewed public RPC contracts through the chat_conversations migration.
 export type LibraryBookRow = {
   id: string;
   user_id: string;
@@ -110,10 +110,28 @@ export type Database = {
         };
         Returns: Json;
       };
-      chat_snapshot: { Args: Record<string, never>; Returns: Json };
-      agent_history: { Args: Record<string, never>; Returns: Json };
+      create_chat_conversation: { Args: { p_id: string }; Returns: Json };
+      list_chat_conversations: {
+        Args: { p_as_of?: string; p_before_at?: string; p_before_id?: string };
+        Returns: Json;
+      };
+      chat_snapshot: {
+        Args: {
+          p_conversation_id: string;
+          p_before_at?: string;
+          p_before_id?: string;
+        };
+        Returns: Json;
+      };
+      agent_history: { Args: { p_conversation_id: string }; Returns: Json };
       start_agent_run: {
-        Args: { p_id: string; p_input: string; p_model: string; p_key: string };
+        Args: {
+          p_conversation_id: string;
+          p_id: string;
+          p_input: string;
+          p_model: string;
+          p_key: string;
+        };
         Returns: Json;
       };
       record_agent_activity: {

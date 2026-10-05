@@ -21,6 +21,7 @@ import { runFailureMessages } from "./failure-messages";
 export async function executeChat(
   reader: ReaderContext,
   token: string,
+  conversationId: string,
   runId: string,
   runKey: string,
   message: string,
@@ -34,6 +35,7 @@ export async function executeChat(
     emit({
       type: activity.phase === "started" ? "tool_started" : "tool_completed",
       run_id: runId,
+      conversation_id: conversationId,
       activity,
     });
   });
@@ -60,7 +62,7 @@ export async function executeChat(
       profile.profile,
       runId,
     );
-    const history = await loadHistory(reader);
+    const history = await loadHistory(reader, conversationId);
     const input = [...history, { role: "user" as const, content: message }];
     const runner = new Runner({
       modelProvider: provider,
@@ -94,11 +96,21 @@ export async function executeChat(
     });
     if (!saved) throw new Error("PERSISTENCE_UNCERTAIN");
     completed = true;
-    emit({ type: "message_delta", run_id: runId, delta: answer.message });
-    const snapshot = await loadChat(reader);
+    emit({
+      type: "message_delta",
+      run_id: runId,
+      conversation_id: conversationId,
+      delta: answer.message,
+    });
+    const snapshot = await loadChat(reader, conversationId);
     const run = snapshot.runs.find((run) => run.id === runId);
     if (!run) throw new Error("PERSISTENCE_UNCERTAIN");
-    emit({ type: "run_completed", run_id: runId, run });
+    emit({
+      type: "run_completed",
+      run_id: runId,
+      conversation_id: conversationId,
+      run,
+    });
   } catch (error) {
     const code = reportRunFailure(error, signal, runId);
     const detail = runFailureMessages[code];
@@ -106,6 +118,7 @@ export async function executeChat(
       ? undefined
       : await persistFailedRun(
           reader,
+          conversationId,
           runId,
           runKey,
           signal.aborted,
@@ -116,6 +129,7 @@ export async function executeChat(
       type: "run_failed",
       ...(failedRun ? { run: failedRun } : {}),
       run_id: runId,
+      conversation_id: conversationId,
       message: `${detail} Reload saved status before sending another request. ${mcp.attemptedWrite ? "Check book/profile updates and saved plans; writes may have completed." : "This run did not attempt a book, preference or plan save."}`,
     });
   } finally {

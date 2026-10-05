@@ -3,6 +3,7 @@ import { planDisplaySchema } from "@/plans/schema";
 
 export const turnSchema = z.strictObject({
   run_id: z.uuid(),
+  conversation_id: z.uuid(),
   message: z.string().trim().min(1).max(4000),
 });
 export const recommendationSchema = z.strictObject({
@@ -45,6 +46,7 @@ export const activitySchema = z.strictObject({
 export type Activity = z.output<typeof activitySchema>;
 export const runSchema = z.strictObject({
   id: z.uuid(),
+  conversation_id: z.uuid(),
   status: z.enum(["active", "completed", "failed", "interrupted"]),
   input: z.string().max(4000),
   answer: z.string().max(12000).nullable(),
@@ -56,34 +58,74 @@ export const runSchema = z.strictObject({
   expires_at: z.iso.datetime({ offset: true }),
 });
 export type ChatRun = z.output<typeof runSchema>;
-export const snapshotSchema = z.strictObject({
-  runs: z.array(runSchema).max(20),
+export const historyCursorSchema = z.strictObject({
+  at: z.iso.datetime({ offset: true }),
+  id: z.uuid(),
 });
+export const conversationCursorSchema = historyCursorSchema.extend({
+  as_of: z.iso.datetime({ offset: true }),
+});
+export const conversationSchema = z.strictObject({
+  id: z.uuid(),
+  title: z.string().min(1).max(80),
+  created_at: z.iso.datetime({ offset: true }),
+  last_activity_at: z.iso.datetime({ offset: true }),
+});
+export type Conversation = z.output<typeof conversationSchema>;
+export const conversationListSchema = z.strictObject({
+  conversations: z.array(conversationSchema).max(20),
+  next_cursor: conversationCursorSchema.nullable(),
+});
+export type ConversationList = z.output<typeof conversationListSchema>;
+export const snapshotSchema = z
+  .strictObject({
+    conversation: conversationSchema,
+    runs: z.array(runSchema).max(20),
+    next_cursor: historyCursorSchema.nullable(),
+  })
+  .superRefine((snapshot, context) => {
+    if (
+      snapshot.runs.some(
+        (run) => run.conversation_id !== snapshot.conversation.id,
+      )
+    )
+      context.addIssue({ code: "custom", message: "Conversation mismatch" });
+  });
+export type ChatSnapshot = z.output<typeof snapshotSchema>;
 export const chatEventSchema = z.discriminatedUnion("type", [
-  z.strictObject({ type: z.literal("run_started"), run_id: z.uuid() }),
+  z.strictObject({
+    type: z.literal("run_started"),
+    run_id: z.uuid(),
+    conversation_id: z.uuid(),
+  }),
   z.strictObject({
     type: z.literal("tool_started"),
     run_id: z.uuid(),
+    conversation_id: z.uuid(),
     activity: activitySchema,
   }),
   z.strictObject({
     type: z.literal("tool_completed"),
     run_id: z.uuid(),
+    conversation_id: z.uuid(),
     activity: activitySchema,
   }),
   z.strictObject({
     type: z.literal("message_delta"),
     run_id: z.uuid(),
+    conversation_id: z.uuid(),
     delta: z.string().max(12000),
   }),
   z.strictObject({
     type: z.literal("run_completed"),
     run_id: z.uuid(),
+    conversation_id: z.uuid(),
     run: runSchema,
   }),
   z.strictObject({
     type: z.literal("run_failed"),
     run_id: z.uuid(),
+    conversation_id: z.uuid(),
     run: runSchema.optional(),
     message: z.string().max(500),
   }),

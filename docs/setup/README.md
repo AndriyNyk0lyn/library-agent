@@ -10,8 +10,9 @@ Your Supabase project and `.env.local` are already created by your report. Auth 
 2. Apply and manually verify [library search/MCP](06-library-search-mcp.md) and [import/library management](07-import-library-management.md). Verify authorization and account isolation.
 3. Apply the [chat/profile migration](08-agent-chat-memory.md), configure [OpenAI](03-openai.md), and manually verify recommendations, explicit memory and run recovery.
 4. Apply and manually verify [reading plans](09-reading-plans.md), including deterministic rejection, explicit saves, refresh and retry recovery.
-5. Follow [Showcase hosting](04-deployment.md) for the first hosted MCP milestone, before expanding to all tools.
-6. Continue ticket 05 for hosted showcase preparation and handoff.
+5. Apply and manually verify [separate conversations and history](10-chat-history.md), including legacy backfill, paging, conversation isolation and retry recovery.
+6. Follow [Showcase hosting](04-deployment.md) for the first hosted MCP milestone, before expanding to all tools.
+7. Continue ticket 05 for hosted showcase preparation and handoff.
 
 [Local development](01-local-development.md) covers installation and checks. [Supabase setup](02-supabase.md) is the reference if you need to revisit project configuration.
 

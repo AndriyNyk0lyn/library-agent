@@ -106,7 +106,8 @@ Use disposable data and two accounts. Do not use personal Goodreads reviews in t
 4. Request an impossible plan; show deterministic validation feedback and a bounded revision.
 5. Save a feasible plan and reopen it after refresh.
 6. Show authored agent instructions, tool schemas, project instructions, and a development skill.
-7. Explain persisted memory, the real HTTP MCP boundary, and deferred multiple-agent/RAG scope.
+7. Create separate chats, reopen stable links and load older display messages. Explain the latest-five-exchange context and 30-day retention, then shared preferences.
+8. Explain persisted memory, the real HTTP MCP boundary, and deferred multiple-agent/RAG scope.
 
 Keep a demo result log with date, deployed URL, model, checks performed, and known limitations. A working local mock is not a successful hosted showcase.
 
@@ -139,3 +140,7 @@ Showcase ticket 04 is implementation-resolved. Added deterministic preview/savin
 - Focused self-review covered owner derivation, composite related-owner FK/RLS/grants, immutable ledger/locks/version checks, midnight recovery, inclusive dates/progress/feasibility, strict authoritative outputs, observed HTTP cards, revision caps, safe activity/continuation, and retained uncertain input. Fixed pending-edit/submitted-value mismatch by disabling fields during submission; authoritative optional output fields are required rather than defaulted.
 - Local migration `20261004154621_reading_plans.sql` is **unapplied**. It adds plans and extends chat storage/finalization with `p_plans`. No dependency or environment changes; CLI only created the local migration and wrote its local telemetry under approved filesystem escalation.
 - No automated/functional tests, build, browser QA, database/advisor query, live MCP/model request, migration application, account/resource creation or deployment. Existing tests were preserved. Static checks and self-review do not establish runtime persistence, model intent/agreement compliance, two-revision behavior or real-account isolation. User verification remains required before a showcase.
+
+## Separate chat history implementation — 2026-10-04
+
+[History 02](../.scratch/chat-history-maintainability/issues/02-chat-history.md) is implementation-resolved: durable conversations/legacy backfill, stable links, bounded pagination, separate continuation and preserved reader-wide limits, tab drafts and GET-only recovery. See [migration/contracts and manual checks](setup/10-chat-history.md). Lint, typecheck, formatting, targeted Markdown formatting and diff whitespace checks passed. The new chat-conversations migration is **unapplied**. Existing tests are unchanged; no tests, builds, browser/functional QA, database queries, remote migration or paid-model requests were performed. Runtime behavior and isolation remain unverified.
