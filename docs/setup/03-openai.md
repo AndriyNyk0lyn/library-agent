@@ -22,7 +22,7 @@ Keep the key server-only; never use a `NEXT_PUBLIC_` prefix. [API quickstart](ht
 
 After applying the chat migration, send a small request using disposable book data. Confirm that the agent retrieves books through the authenticated MCP HTTP endpoint and returns real library records. Then verify a requested update persists. No runnable agent smoke command exists yet.
 
-Provider tracing and sensitive SDK logging are disabled; the UI exposes only safe tool activity. Verify those privacy boundaries during your manual checks. You do not need a separate tracing service or dashboard setup.
+Provider tracing is enabled, with sensitive span data capture and sensitive SDK logging disabled; the UI exposes only safe tool activity. Restart the app after configuration changes, send a new chat request, and inspect the [Traces dashboard](https://platform.openai.com/traces) in the API key's project. Earlier runs recorded with tracing disabled will not appear. Verify those privacy boundaries during your manual checks. You do not need a separate tracing service.
 
 ## Troubleshooting
 

@@ -13,7 +13,7 @@ import { agentAnswerSchema } from "./schema";
 import { librarianInstructions } from "./instructions";
 import { reserveFinalTurn } from "./turn-budget";
 
-setTracingDisabled(true);
+setTracingDisabled(false);
 setSensitiveDataLoggingEnabled(false);
 export function agentConfig() {
   return z

@@ -72,7 +72,7 @@ export async function executeChat(
     const input = [...history, { role: "user" as const, content: message }];
     const runner = new Runner({
       modelProvider: provider,
-      tracingDisabled: true,
+      tracingDisabled: false,
       traceIncludeSensitiveData: false,
     });
     const result = await runner.run(agent, input, {
