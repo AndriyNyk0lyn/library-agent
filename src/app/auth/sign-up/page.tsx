@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { PageHeading } from "@/components/page-heading";
 import { CredentialsForm } from "@/auth/credentials-form";
 import { signUp } from "@/auth/actions";
@@ -19,9 +19,9 @@ export default function SignUpPage() {
         passwordAutocomplete="new-password"
       />
       <p className="mt-6">
-        <Link href="/auth/sign-in" className="text-link">
+        <TextLink href="/auth/sign-in">
           Already have an account? Sign in
-        </Link>
+        </TextLink>
       </p>
     </>
   );

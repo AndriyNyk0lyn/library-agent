@@ -1,4 +1,5 @@
 "use client";
+import { EmailField, PasswordField } from "./credential-fields";
 
 import { useActionState, useState } from "react";
 import { updatePassword } from "./actions";
@@ -17,22 +18,11 @@ export function RequestEmailForm({
   return (
     <form action={action} className="max-w-md space-y-5">
       <FormFeedback state={state} />
-      <div>
-        <label htmlFor="email" className="form-label">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          maxLength={254}
-          className="form-field"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-      </div>
+      <EmailField
+        id="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
       <SubmitButton pendingLabel="Sending…">{label}</SubmitButton>
     </form>
   );
@@ -44,24 +34,13 @@ export function UpdatePasswordForm() {
   return (
     <form action={action} className="max-w-md space-y-5">
       <FormFeedback state={state} />
-      <div>
-        <label htmlFor="password" className="form-label">
-          New password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          autoComplete="new-password"
-          minLength={8}
-          maxLength={256}
-          className="form-field"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
-        <p className="mt-1 text-sm text-muted">At least 8 characters.</p>
-      </div>
+      <PasswordField
+        id="password"
+        label="New password"
+        autoComplete="new-password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+      />
       <SubmitButton pendingLabel="Saving…">Save password</SubmitButton>
     </form>
   );

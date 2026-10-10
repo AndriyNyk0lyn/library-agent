@@ -1,3 +1,4 @@
+import { LoadingMessage } from "@/components/ui/feedback";
 export default function PlansLoading() {
-  return <p role="status">Loading reading plans…</p>;
+  return <LoadingMessage>Loading reading plans…</LoadingMessage>;
 }

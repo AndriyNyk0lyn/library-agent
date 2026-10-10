@@ -1,4 +1,7 @@
-import Link from "next/link";
+import { CatalogCandidateCard } from "@/books/catalog/candidate-card";
+import { StatusMessage } from "@/components/ui/feedback";
+import { ErrorMessage } from "@/components/ui/feedback";
+import { TextLink } from "@/components/ui/text-link";
 import { requireReader } from "@/auth/reader";
 import { PageHeading } from "@/components/page-heading";
 import { catalogEnabled } from "@/books/catalog/config";
@@ -33,13 +36,9 @@ export default async function CatalogPage({
         description="Optional external catalog search. Results are not saved library books. Choose an edition before adding one."
       />
       <p className="mb-5">
-        <Link href="/library/new" className="text-link">
-          Add a book manually
-        </Link>
+        <TextLink href="/library/new">Add a book manually</TextLink>
         {" · "}
-        <Link href="/library" className="text-link">
-          Back to library
-        </Link>
+        <TextLink href="/library">Back to library</TextLink>
       </p>
       {!enabled ? (
         <p>
@@ -54,39 +53,20 @@ export default async function CatalogPage({
             isbn={typeof params.isbn === "string" ? params.isbn : ""}
           />
           {result && !result.ok ? (
-            <p role="alert" className="mt-5">
-              {result.error.message}
-            </p>
+            <ErrorMessage className="mt-5">{result.error.message}</ErrorMessage>
           ) : null}
           {result?.ok && !result.candidates.length ? (
-            <p role="status" className="mt-5">
+            <StatusMessage className="mt-5">
               No Open Library matches. Try a different title, author or ISBN.
-            </p>
+            </StatusMessage>
           ) : null}
           {result?.ok ? (
             <ul className="mt-6 space-y-5">
               {result.candidates.map((candidate) => (
-                <li key={candidate.provider_id} className="rounded border p-4">
-                  <p className="text-sm">Open Library · External work</p>
-                  <h2 className="font-semibold">{candidate.title}</h2>
-                  <p>{candidate.authors.join(", ") || "Author unknown"}</p>
-                  <a href={candidate.source_url} className="text-link">
-                    View catalog source
-                  </a>
-                  <p className="mt-2">
-                    {candidate.edition_id ? (
-                      <Link
-                        className="text-link"
-                        prefetch={false}
-                        href={`/library/catalog/${candidate.edition_id}`}
-                      >
-                        Review suggested edition {candidate.edition_id}
-                      </Link>
-                    ) : (
-                      "No edition available. Add manually."
-                    )}
-                  </p>
-                </li>
+                <CatalogCandidateCard
+                  key={candidate.provider_id}
+                  candidate={candidate}
+                />
               ))}
             </ul>
           ) : null}

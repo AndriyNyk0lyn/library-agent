@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { PageHeading } from "@/components/page-heading";
 import { RequestEmailForm } from "@/auth/recovery-forms";
 import { resendConfirmation } from "@/auth/actions";
@@ -18,9 +18,7 @@ export default function ResendConfirmationPage() {
         label="Resend confirmation"
       />
       <p className="mt-6">
-        <Link href="/auth/sign-in" className="text-link">
-          Return to sign in
-        </Link>
+        <TextLink href="/auth/sign-in">Return to sign in</TextLink>
       </p>
     </>
   );

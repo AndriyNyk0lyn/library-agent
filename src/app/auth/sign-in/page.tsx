@@ -1,5 +1,6 @@
+import { ErrorMessage } from "@/components/ui/feedback";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { PageHeading } from "@/components/page-heading";
 import { CredentialsForm } from "@/auth/credentials-form";
 import { signIn } from "@/auth/actions";
@@ -19,11 +20,11 @@ export default async function SignInPage({
         description="Open your private reading library."
       />
       {confirmation === "failed" ? (
-        <p role="alert" className="mb-5 text-red-800">
+        <ErrorMessage className="mb-5 text-red-800">
           The email link is invalid or expired. Try signing in if your email is
           already confirmed, or request a new confirmation or password reset
           link.
-        </p>
+        </ErrorMessage>
       ) : null}
       <CredentialsForm
         action={signIn}
@@ -31,15 +32,11 @@ export default async function SignInPage({
         passwordAutocomplete="current-password"
       />
       <div className="mt-6 flex flex-wrap gap-5">
-        <Link href="/auth/sign-up" className="text-link">
-          Create an account
-        </Link>
-        <Link href="/auth/forgot-password" className="text-link">
-          Forgot password?
-        </Link>
-        <Link href="/auth/resend-confirmation" className="text-link">
+        <TextLink href="/auth/sign-up">Create an account</TextLink>
+        <TextLink href="/auth/forgot-password">Forgot password?</TextLink>
+        <TextLink href="/auth/resend-confirmation">
           Resend confirmation
-        </Link>
+        </TextLink>
       </div>
     </>
   );

@@ -1,5 +1,7 @@
+import { CatalogEditionDetails } from "@/books/catalog/edition-details";
+import { ErrorMessage } from "@/components/ui/feedback";
 import { randomUUID } from "node:crypto";
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { requireReader } from "@/auth/reader";
 import { PageHeading } from "@/components/page-heading";
 import { BookForm } from "@/books/book-form";
@@ -21,14 +23,10 @@ export default async function CatalogEditionPage({
           title="Open Library edition"
           description="Review an edition before saving."
         />
-        <p role="alert">{result.error.message}</p>
-        <Link href="/library/catalog" className="text-link">
-          Back to catalog
-        </Link>
+        <ErrorMessage>{result.error.message}</ErrorMessage>
+        <TextLink href="/library/catalog">Back to catalog</TextLink>
         {" · "}
-        <Link href="/library/new" className="text-link">
-          Add manually
-        </Link>
+        <TextLink href="/library/new">Add manually</TextLink>
       </>
     );
   const candidate = result.candidate;
@@ -45,41 +43,7 @@ export default async function CatalogEditionPage({
         title="Review this edition"
         description="Open Library · External edition. Confirm these details match your edition before saving. This creates a new library book and does not edit existing records."
       />
-      <dl className="mb-5 space-y-2">
-        <div>
-          <dt>Edition</dt>
-          <dd>
-            <a href={candidate.source_url} className="text-link">
-              {candidate.edition_id}
-            </a>
-          </dd>
-        </div>
-        <div>
-          <dt>ISBN</dt>
-          <dd>{candidate.isbn13 ?? candidate.isbn10 ?? "Unknown"}</dd>
-        </div>
-        <div>
-          <dt>Publisher / publication date</dt>
-          <dd>
-            {candidate.publishers.join(", ") || "Unknown"} /{" "}
-            {candidate.publish_date ?? "Unknown"}
-          </dd>
-        </div>
-        <div>
-          <dt>Language</dt>
-          <dd>{candidate.language.join(", ") || "Unknown"}</dd>
-        </div>
-      </dl>
-      {candidate.description ? (
-        <details className="mb-5">
-          <summary>Show catalog description (may contain spoilers)</summary>
-          <p className="whitespace-pre-wrap">{candidate.description}</p>
-        </details>
-      ) : null}
-      <p className="mb-5">
-        You can correct title, authors and pages below. Missing values stay
-        unknown. Check your library first if you may already have this book.
-      </p>
+      <CatalogEditionDetails candidate={candidate} />
       <BookForm
         key={candidate.edition_id}
         bookId={randomUUID()}

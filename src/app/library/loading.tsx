@@ -1,7 +1,8 @@
+import { LoadingMessage } from "@/components/ui/feedback";
 export default function LoadingLibrary() {
   return (
-    <p role="status" className="text-muted">
+    <LoadingMessage className="text-muted">
       Loading your library…
-    </p>
+    </LoadingMessage>
   );
 }

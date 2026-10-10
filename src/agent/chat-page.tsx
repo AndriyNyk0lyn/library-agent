@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { ErrorMessage } from "@/components/ui/feedback";
+import { TextLink } from "@/components/ui/text-link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireReader } from "@/auth/reader";
@@ -25,17 +26,14 @@ export async function SavedChatPage({
           title="Reading companion"
           description="Browse your saved conversations."
         />
-        <p role="alert">
+        <ErrorMessage>
           Could not load chat history. Check sign-in and apply the chat history
           migration.{" "}
-          <Link
-            href={conversationId ? `/chat/${conversationId}` : "/chat"}
-            className="text-link"
-          >
+          <TextLink href={conversationId ? `/chat/${conversationId}` : "/chat"}>
             Try again
-          </Link>
+          </TextLink>
           .
-        </p>
+        </ErrorMessage>
       </>
     );
   }

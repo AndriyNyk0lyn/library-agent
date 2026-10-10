@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { catalogEnabled } from "@/books/catalog/config";
 import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
@@ -18,9 +18,9 @@ export default async function AddBookPage() {
       />
       {catalogEnabled() ? (
         <p className="mb-5">
-          <Link href="/library/catalog" className="text-link">
+          <TextLink href="/library/catalog">
             Find an edition with Open Library
-          </Link>
+          </TextLink>
         </p>
       ) : null}
       <BookForm bookId={randomUUID()} />

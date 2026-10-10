@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { BookMetadata, BookPlanActions } from "@/books/book-details";
+import { ErrorMessage } from "@/components/ui/feedback";
+import { TextLink } from "@/components/ui/text-link";
 import { requireReader } from "@/auth/reader";
 import { getBook } from "@/books/service";
 import { EditBookForm } from "@/books/edit-book-form";
@@ -19,59 +21,16 @@ export default async function BookDetailsPage({
           title="Book details"
           description="Read and edit your saved book."
         />
-        <p role="alert">{result.error.message}</p>
-        <Link href="/library" className="text-link">
-          Back to library
-        </Link>
+        <ErrorMessage>{result.error.message}</ErrorMessage>
+        <TextLink href="/library">Back to library</TextLink>
       </>
     );
   const book = result.book;
   return (
     <>
       <PageHeading title={book.title} description={book.authors.join(", ")} />
-      <dl className="mb-6 space-y-2">
-        <div>
-          <dt>ISBN</dt>
-          <dd>{book.isbn13 ?? book.isbn10 ?? "Unknown"}</dd>
-        </div>
-        {book.goodreads_book_id ? (
-          <div>
-            <dt>Goodreads ID</dt>
-            <dd>{book.goodreads_book_id}</dd>
-          </div>
-        ) : null}
-        {book.imported_shelves.length ? (
-          <div>
-            <dt>Imported shelves</dt>
-            <dd>{book.imported_shelves.join(", ")}</dd>
-          </div>
-        ) : null}
-        {book.goodreads_date_added ? (
-          <div>
-            <dt>Added on Goodreads</dt>
-            <dd>{book.goodreads_date_added}</dd>
-          </div>
-        ) : null}
-        {book.catalog_metadata ? (
-          <div>
-            <dt>Catalog provenance</dt>
-            <dd>
-              <a href={book.catalog_metadata.source_url} className="text-link">
-                Open Library edition {book.catalog_metadata.edition_id}
-              </a>
-            </dd>
-          </div>
-        ) : null}
-      </dl>
-      <p className="mb-4">
-        <Link href={`/plans/new?book_id=${book.id}`} className="text-link">
-          Make a reading plan
-        </Link>
-        {" · "}
-        <Link href={`/plans?book_id=${book.id}`} className="text-link">
-          View this book’s saved plans
-        </Link>
-      </p>
+      <BookMetadata book={book} />
+      <BookPlanActions bookId={book.id} />
       <EditBookForm book={book} key={book.id} />
     </>
   );

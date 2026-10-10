@@ -1,0 +1,11 @@
+/* Design-sync stylesheet: the app's real globals.css plus a safelist so the
+   Claude Design agent can use token utilities the app hasn't used yet. */
+@import "../src/app/globals.css";
+
+@source "../src";
+@source inline("{hover:,}{bg,text,border}-{background,surface,foreground,muted,line,accent}");
+@source inline("{p,px,py,pt,pb,m,mx,my,mt,mb,gap,space-y}-{0,1,2,3,4,5,6,8,10,12,16}");
+@source inline("text-{xs,sm,base,lg,xl,2xl,3xl} font-{normal,medium,semibold,bold} tracking-tight");
+@source inline("{flex,inline-flex,grid,block,hidden} flex-{col,wrap} items-{start,center,end} justify-{start,center,between,end}");
+@source inline("grid-cols-{1,2,3,4} {sm:,md:,lg:}grid-cols-{2,3,4} rounded{,-md,-lg} border{,-t,-b} w-full max-w-{xl,2xl,3xl,4xl,5xl} mx-auto min-h-screen");
+@source inline("{bg,text,border}-red-{50,300,800} hover:bg-{stone-100,stone-200,green-800} text-white shadow-sm underline underline-offset-4");

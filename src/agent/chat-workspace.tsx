@@ -1,9 +1,8 @@
 "use client";
+import { ConversationNavigation } from "./conversation-navigation";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Chat } from "./chat";
+import { SelectedChat } from "./selected-chat";
 import {
   conversationListSchema,
   conversationSchema,
@@ -98,73 +97,18 @@ export function ChatWorkspace({
   );
   return (
     <div className="grid gap-6 md:grid-cols-[16rem_minmax(0,1fr)]">
-      <nav
-        aria-label="Saved conversations"
-        aria-busy={loading || creating}
-        className="space-y-3"
-      >
-        <Button disabled={creating} onClick={() => void newChat()}>
-          {creating ? "Creating chat…" : "New chat"}
-        </Button>
-        <p className="text-sm text-muted">
-          Drafts stay in this tab when switching chats. Switching stops
-          receiving an active run; reopen it to check saved status.
-        </p>
-        {conversations.length === 0 && <p>No saved conversations yet.</p>}
-        <ul className="space-y-2">
-          {snapshot &&
-            !conversations.some(
-              (item) => item.id === snapshot.conversation.id,
-            ) && (
-              <li>
-                <Link
-                  className="text-link"
-                  href={`/chat/${snapshot.conversation.id}`}
-                  aria-current="page"
-                >
-                  {snapshot.conversation.title}
-                </Link>
-              </li>
-            )}
-          {conversations.map((item) => (
-            <li key={item.id}>
-              <Link
-                className="text-link break-words"
-                href={`/chat/${item.id}`}
-                aria-current={
-                  snapshot?.conversation.id === item.id ? "page" : undefined
-                }
-              >
-                {item.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        {list.next_cursor ? (
-          <Button
-            variant="outline"
-            disabled={loading}
-            onClick={() => void loadMore()}
-          >
-            {loading ? "Loading conversations…" : "Load older conversations"}
-          </Button>
-        ) : (
-          <p className="text-sm text-muted">End of saved conversations.</p>
-        )}
-        {error && <p role="alert">{error}</p>}
-      </nav>
-      <section aria-label="Selected chat" className="min-w-0">
-        {snapshot ? (
-          <>
-            <h2 className="mb-3 text-lg font-semibold">
-              {snapshot.conversation.title}
-            </h2>
-            <Chat key={snapshot.conversation.id} initialSnapshot={snapshot} />
-          </>
-        ) : (
-          <p>Select a saved conversation or start a new chat.</p>
-        )}
-      </section>
+      <ConversationNavigation
+        conversations={conversations}
+        selected={snapshot?.conversation}
+        hasMore={Boolean(list.next_cursor)}
+        loading={loading}
+        creating={creating}
+        error={error}
+        onCreate={() => void newChat()}
+        onLoadMore={() => void loadMore()}
+      />
+
+      <SelectedChat snapshot={snapshot} />
     </div>
   );
 }

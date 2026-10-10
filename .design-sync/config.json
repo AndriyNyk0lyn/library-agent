@@ -1,0 +1,43 @@
+{
+  "projectId": "5ad35edd-e7d1-4bf3-9e9b-d13a3e41d5d8",
+  "shape": "package",
+  "pkg": "reading-companion",
+  "globalName": "ReadingCompanion",
+  "buildCmd": "node .design-sync/prebuild.mjs",
+  "srcDir": "../../src",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": "app.css",
+  "guidelinesGlob": [
+    "../../docs/style-guide.md"
+  ],
+  "readmeHeader": ".design-sync/conventions.md",
+  "dtsPropsFor": {
+    "BookCard": "/** A saved library book (LibraryBookRow). Renders title (links to /library/<id>), authors, Status/Rating/Ownership/Pages metadata and collapsible notes. Must be inside a <ul>: it renders an <li>. */ book: { id: string; title: string; authors: string[]; status: \"want_to_read\" | \"reading\" | \"finished\" | \"dropped\"; rating: number | null /* 0.5\u20135, null = Unrated */; owned: boolean | null /* null = Unknown */; page_count: number | null; notes: string /* empty = no notes disclosure */; isbn10: string | null; isbn13: string | null; [field: string]: unknown };",
+    "CatalogCandidateCard": "/** An Open Library search result. Renders an <li>, so place it inside a <ul>. */ candidate: { provider: \"open_library\"; kind: \"work\" | \"edition\"; provider_id: string /* e.g. \"OL45804W\" */; source_url: string /* https://openlibrary.org/works/OL\u2026W */; title: string; authors: string[]; edition_id: string | null /* e.g. \"OL7353617M\"; null = 'No edition available' */; isbn10: string | null; isbn13: string | null; page_count: number | null; cover_url: string | null; description: string | null; language: string[]; publishers: string[]; publish_date: string | null };",
+    "PlanSummary": "/** A calculated reading plan: book link, dates, daily page target, time estimate, feasibility and assumptions list. */ calculation: { book_id: string; book_version: number; title: string; authors: string[]; start_date: string /* YYYY-MM-DD */; target_date: string /* YYYY-MM-DD */; timezone: string /* IANA, e.g. \"Europe/London\" */; remaining_pages: number; pages_read: number | null; page_count: number | null; available_days: number; daily_pages: number; pages_per_hour: number | null; daily_reading_minutes: number | null; estimated_daily_minutes: number | null; time_feasibility: \"feasible\" | \"unknown\" | \"infeasible\"; assumptions: string[] };",
+    "PlanResultCard": "/** A reading-plan outcome card, discriminated by `kind`: a saved plan, an unsaved suggestion, or a rejected schedule with its error. */ result: { kind: \"saved\"; plan: { book_id: string; book_version: number; title: string; authors: string[]; start_date: string /* YYYY-MM-DD */; target_date: string /* YYYY-MM-DD */; timezone: string /* IANA, e.g. \"Europe/London\" */; remaining_pages: number; pages_read: number | null; page_count: number | null; available_days: number; daily_pages: number; pages_per_hour: number | null; daily_reading_minutes: number | null; estimated_daily_minutes: number | null; time_feasibility: \"feasible\" | \"unknown\" | \"infeasible\"; assumptions: string[]; id: string; operation_id: string; status: \"active\" | \"completed\" | \"cancelled\"; created_at: string } } | { kind: \"suggestion\"; calculation: { book_id: string; book_version: number; title: string; authors: string[]; start_date: string /* YYYY-MM-DD */; target_date: string /* YYYY-MM-DD */; timezone: string /* IANA, e.g. \"Europe/London\" */; remaining_pages: number; pages_read: number | null; page_count: number | null; available_days: number; daily_pages: number; pages_per_hour: number | null; daily_reading_minutes: number | null; estimated_daily_minutes: number | null; time_feasibility: \"feasible\" | \"unknown\" | \"infeasible\"; assumptions: string[] } } | { kind: \"rejected\"; error: { code: \"VALIDATION_ERROR\" | \"NOT_FOUND\" | \"CONFLICT\" | \"PLAN_INFEASIBLE\" | \"UPSTREAM_UNAVAILABLE\" | \"REVISION_LIMIT\"; message: string }; constraints?: { book_id: string; book_version: number; title: string; authors: string[]; start_date: string /* YYYY-MM-DD */; target_date: string /* YYYY-MM-DD */; timezone: string /* IANA, e.g. \"Europe/London\" */; remaining_pages: number; pages_read: number | null; page_count: number | null; available_days: number; daily_pages: number; pages_per_hour: number | null; daily_reading_minutes: number | null; estimated_daily_minutes: number | null; time_feasibility: \"feasible\" | \"unknown\" | \"infeasible\"; assumptions: string[] } };"
+  },
+  "componentSrcMap": {
+    "CurrentPathProvider": null
+  },
+  "overrides": {
+    "AppHeader": {
+      "cardMode": "column"
+    },
+    "BookCard": {
+      "cardMode": "column"
+    },
+    "PlanResultCard": {
+      "cardMode": "column"
+    },
+    "PlanSummary": {
+      "cardMode": "column"
+    },
+    "SetupSteps": {
+      "cardMode": "column"
+    },
+    "LinkedText": {
+      "cardMode": "column"
+    }
+  }
+}

@@ -1,6 +1,8 @@
 "use client";
+import { Button } from "@/components/ui/button";
+import { ErrorMessage } from "@/components/ui/feedback";
 
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { PageHeading } from "@/components/page-heading";
 
 export default function ErrorPage({ reset }: { reset: () => void }) {
@@ -10,20 +12,15 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
         title="Something went wrong"
         description="We could not complete this request."
       />
-      <p role="alert" className="mb-5 text-muted">
+      <ErrorMessage className="mb-5 text-muted">
         Please try loading the page again. If the problem continues, check your
         service configuration.
-      </p>
+      </ErrorMessage>
       <div className="flex flex-wrap items-center gap-5">
-        <button
-          onClick={reset}
-          className="rounded border border-line bg-surface px-4 py-2"
-        >
+        <Button onClick={reset} variant="outline">
           Try again
-        </button>
-        <Link href="/setup" className="text-link">
-          View setup
-        </Link>
+        </Button>
+        <TextLink href="/setup">View setup</TextLink>
       </div>
     </>
   );

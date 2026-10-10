@@ -1,3 +1,5 @@
+import { ErrorMessage } from "@/components/ui/feedback";
+import { AnchorLink } from "@/components/ui/text-link";
 import { requireReader } from "@/auth/reader";
 import { PageHeading } from "@/components/page-heading";
 import { getReaderProfile } from "@/profile/service";
@@ -21,12 +23,10 @@ export default async function ProfilePage() {
           }}
         />
       ) : (
-        <p role="alert">
+        <ErrorMessage>
           {result.error.message}{" "}
-          <a href="/profile" className="text-link">
-            Try again
-          </a>
-        </p>
+          <AnchorLink href="/profile">Try again</AnchorLink>
+        </ErrorMessage>
       )}
     </>
   );

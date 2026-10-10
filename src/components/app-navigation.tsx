@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { NavigationLink } from "./ui/navigation-link";
 import { usePathname } from "next/navigation";
 
 const navigation = [
@@ -20,14 +20,9 @@ export function AppNavigation() {
         const isCurrent = pathname === href || pathname.startsWith(`${href}/`);
 
         return (
-          <Link
-            key={href}
-            href={href}
-            aria-current={isCurrent ? "page" : undefined}
-            className={`rounded px-3 py-2 text-sm font-medium ${isCurrent ? "bg-foreground text-surface" : "text-muted hover:bg-stone-200 hover:text-foreground"}`}
-          >
+          <NavigationLink key={href} href={href} current={isCurrent}>
             {label}
-          </Link>
+          </NavigationLink>
         );
       })}
     </nav>

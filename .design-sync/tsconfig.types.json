@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "rootDir": "..",
+    "outDir": "./pkg/types",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "../src/*"
+      ]
+    }
+  },
+  "files": [
+    "./pkg/index.ts"
+  ]
+}

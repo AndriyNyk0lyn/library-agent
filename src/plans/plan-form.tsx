@@ -1,4 +1,6 @@
 "use client";
+import { ErrorMessage } from "@/components/ui/feedback";
+import { InputField } from "@/components/ui/field";
 import {
   useActionState,
   useState,
@@ -6,8 +8,8 @@ import {
   type SetStateAction,
 } from "react";
 import { useFormStatus } from "react-dom";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { TextLink } from "@/components/ui/text-link";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { PlanResultCard } from "./plan-summary";
 import { submitPlan, type PlanFormState, type PlanFormValues } from "./actions";
 
@@ -18,32 +20,27 @@ function PlanButtons({
   uncertain: boolean;
   saved: boolean;
 }) {
-  const { pending } = useFormStatus();
   return (
     <div className="flex flex-wrap gap-3">
       {!uncertain && (
-        <Button
-          type="submit"
+        <SubmitButton
+          pendingLabel="Check schedule without saving"
           variant="outline"
           name="intent"
           value="preview"
-          disabled={pending || saved}
+          disabled={saved}
         >
           Check schedule without saving
-        </Button>
+        </SubmitButton>
       )}
-      <Button
-        type="submit"
+      <SubmitButton
+        pendingLabel="Checking schedule…"
         name="intent"
         value="save"
-        disabled={pending || saved}
+        disabled={saved}
       >
-        {pending
-          ? "Checking schedule…"
-          : uncertain
-            ? "Retry identical save"
-            : "Save reading plan"}
-      </Button>
+        {uncertain ? "Retry identical save" : "Save reading plan"}
+      </SubmitButton>
     </div>
   );
 }
@@ -65,26 +62,23 @@ export function PlanForm({ initial }: { initial: PlanFormState }) {
       />
       {state.result && <PlanResultCard result={state.result} />}
       {state.result?.kind === "rejected" && (
-        <p role="alert">
+        <ErrorMessage>
           Your inputs are retained.{" "}
           {state.result.error.code === "CONFLICT" && (
-            <Link
-              href={`/plans/new?book_id=${state.bookId}`}
-              className="text-link"
-            >
+            <TextLink href={`/plans/new?book_id=${state.bookId}`}>
               Reload current book version
-            </Link>
+            </TextLink>
           )}
-        </p>
+        </ErrorMessage>
       )}
       {state.uncertain && (
-        <p role="alert">
+        <ErrorMessage>
           The save may have completed. Inputs are locked for an identical retry.{" "}
-          <Link href={`/plans?book_id=${state.bookId}`} className="text-link">
+          <TextLink href={`/plans?book_id=${state.bookId}`}>
             Check saved plans
-          </Link>{" "}
+          </TextLink>{" "}
           before starting another save.
-        </p>
+        </ErrorMessage>
       )}
       <PlanButtons uncertain={state.uncertain} saved={saved} />
     </form>
@@ -155,24 +149,20 @@ function PlanFields({
   return (
     <fieldset disabled={locked || pending} className="space-y-4">
       {fields.map(({ label, ...field }) => (
-        <div key={field.name}>
-          <label htmlFor={field.name} className="form-label">
-            {label}
-          </label>
-          <input
-            {...field}
-            id={field.name}
-            maxLength={field.type === "text" ? 100 : undefined}
-            value={values[field.name]}
-            onChange={(event) =>
-              setValues((previous) => ({
-                ...previous,
-                [field.name]: event.target.value,
-              }))
-            }
-            className="form-field"
-          />
-        </div>
+        <InputField
+          key={field.name}
+          label={label}
+          {...field}
+          id={field.name}
+          maxLength={field.type === "text" ? 100 : undefined}
+          value={values[field.name]}
+          onChange={(event) =>
+            setValues((previous) => ({
+              ...previous,
+              [field.name]: event.target.value,
+            }))
+          }
+        />
       ))}
     </fieldset>
   );

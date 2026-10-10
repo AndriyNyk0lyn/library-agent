@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["../../src/*"],
+      "next/link": ["../next-shim/link.tsx"],
+      "next/navigation": ["../next-shim/navigation.tsx"]
+    }
+  }
+}

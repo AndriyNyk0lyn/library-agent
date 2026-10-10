@@ -1,17 +1,16 @@
 "use client";
-import Link from "next/link";
+import { ErrorMessage } from "@/components/ui/feedback";
+import { TextLink } from "@/components/ui/text-link";
 import { Button } from "@/components/ui/button";
 
 export default function PlansError({ reset }: { reset: () => void }) {
   return (
     <div className="space-y-3">
-      <p role="alert">
+      <ErrorMessage>
         Could not confirm this operation. If you were saving, the plan may have
         been saved. Check saved plans before starting another save.
-      </p>
-      <Link href="/plans" className="text-link">
-        Check saved plans
-      </Link>
+      </ErrorMessage>
+      <TextLink href="/plans">Check saved plans</TextLink>
       <div>
         <Button type="button" variant="outline" onClick={reset}>
           Reload this view

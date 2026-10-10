@@ -1,8 +1,19 @@
 "use client";
+import { EditBookFeedback } from "./edit-book-feedback";
+import { CheckboxField } from "@/components/ui/checkbox";
+import {
+  NotesField,
+  OwnershipField,
+  PageCountField,
+  RatingField,
+  ReadingStatusField,
+} from "@/books/book-fields";
+
+import { Button } from "@/components/ui/button";
+import { InputField } from "@/components/ui/field";
 import { useState, useTransition, useRef } from "react";
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
 import { saveBookEdit } from "./edit-actions";
-import { readingStatuses, statusLabels } from "./schemas";
 import { type BookDetails, type BookResult } from "./management-schema";
 
 function fieldsFor(book: BookDetails) {
@@ -88,192 +99,90 @@ export function EditBookForm({ book }: { book: BookDetails }) {
       <p className="text-muted">
         Version {saved.version}. Blank optional fields stay unknown.
       </p>
-      {result?.ok ? (
-        <p role="status">Book saved. Version {result.book.version}.</p>
-      ) : result ? (
-        <section
-          role="alert"
-          className="space-y-3 rounded border border-line p-4"
-        >
-          <p>
-            {result.error.code}: {result.error.message}
-          </p>
-          {result.current ? (
-            <>
-              <h2 className="font-semibold">
-                Current saved version {result.current.version}
-              </h2>
-              <p>
-                {statusLabels[result.current.status]} · Rating{" "}
-                {result.current.rating ?? "Unrated"} · Pages{" "}
-                {result.current.page_count ?? "Unknown"} · Ownership{" "}
-                {result.current.owned === null
-                  ? "Unknown"
-                  : result.current.owned
-                    ? "Owned"
-                    : "Not owned"}
-              </p>
-              <p>
-                Started {result.current.started_at ?? "Unknown"}; finished{" "}
-                {result.current.finished_at ?? "Unknown"}
-              </p>
-              <p className="whitespace-pre-wrap break-words">
-                {result.current.notes || "No notes"}
-              </p>
-              <button
-                type="button"
-                className="text-link"
-                onClick={() => {
-                  if (result.current) {
-                    setSaved(result.current);
-                    setFields(fieldsFor(result.current));
-                    setReplaceNotes(false);
-                    setResult(undefined);
-                    operation.current = null;
-                  }
-                }}
-              >
-                Load this version into the form
-              </button>
-              <p>Your draft stays in the form until you load this version.</p>
-            </>
-          ) : (
-            <a href={`/library/${saved.id}`} className="text-link">
-              Reload current book
-            </a>
-          )}
-        </section>
-      ) : null}
+      <EditBookFeedback
+        result={result}
+        bookId={saved.id}
+        onLoadCurrent={(current) => {
+          setSaved(current);
+          setFields(fieldsFor(current));
+          setReplaceNotes(false);
+          setResult(undefined);
+          operation.current = null;
+        }}
+      />
       <fieldset disabled={pending} className="space-y-5">
         <legend className="sr-only">Edit book details</legend>
+        <ReadingStatusField
+          label="Reading status"
+          id="edit-status"
+          name="status"
+          value={fields.status}
+          onChange={change}
+        />
+        <OwnershipField
+          label="Ownership"
+          id="edit-owned"
+          name="owned"
+          value={fields.owned}
+          onChange={change}
+        />
+        <RatingField
+          label="Rating (optional, out of 5)"
+          id="edit-rating"
+          name="rating"
+          value={fields.rating}
+          onChange={change}
+        />
+        <PageCountField
+          label="Pages (optional)"
+          id="edit-pages"
+          name="page_count"
+          value={fields.page_count}
+          onChange={change}
+        />
+        <InputField
+          label="Started date (optional)"
+          id="edit-started"
+          name="started_at"
+          type="date"
+          value={fields.started_at}
+          onChange={change}
+        />
+        <InputField
+          label="Finished date (optional)"
+          id="edit-finished"
+          name="finished_at"
+          type="date"
+          value={fields.finished_at}
+          onChange={change}
+        />
         <div>
-          <label className="form-label" htmlFor="edit-status">
-            Reading status
-          </label>
-          <select
-            id="edit-status"
-            name="status"
-            value={fields.status}
-            onChange={change}
-            className="form-field"
-          >
-            {readingStatuses.map((status) => (
-              <option key={status} value={status}>
-                {statusLabels[status]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="form-label" htmlFor="edit-owned">
-            Ownership
-          </label>
-          <select
-            id="edit-owned"
-            name="owned"
-            value={fields.owned}
-            onChange={change}
-            className="form-field"
-          >
-            <option value="unknown">Unknown</option>
-            <option value="true">Owned</option>
-            <option value="false">Not owned</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label" htmlFor="edit-rating">
-            Rating (optional, out of 5)
-          </label>
-          <input
-            id="edit-rating"
-            name="rating"
-            type="number"
-            min={0.5}
-            max={5}
-            step={0.5}
-            value={fields.rating}
-            onChange={change}
-            className="form-field"
-          />
-        </div>
-        <div>
-          <label className="form-label" htmlFor="edit-pages">
-            Pages (optional)
-          </label>
-          <input
-            id="edit-pages"
-            name="page_count"
-            type="number"
-            min={1}
-            max={100000}
-            step={1}
-            value={fields.page_count}
-            onChange={change}
-            className="form-field"
-          />
-        </div>
-        <div>
-          <label className="form-label" htmlFor="edit-started">
-            Started date (optional)
-          </label>
-          <input
-            id="edit-started"
-            name="started_at"
-            type="date"
-            value={fields.started_at}
-            onChange={change}
-            className="form-field"
-          />
-        </div>
-        <div>
-          <label className="form-label" htmlFor="edit-finished">
-            Finished date (optional)
-          </label>
-          <input
-            id="edit-finished"
-            name="finished_at"
-            type="date"
-            value={fields.finished_at}
-            onChange={change}
-            className="form-field"
-          />
-        </div>
-        <div>
-          <label className="form-label" htmlFor="edit-notes">
-            Personal notes
-          </label>
-          <textarea
+          <NotesField
+            label="Personal notes"
             id="edit-notes"
             name="notes"
-            maxLength={20000}
             rows={8}
             value={fields.notes}
             onChange={change}
-            className="form-field"
           />
           {notesChanged ? (
-            <label className="mt-2 flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={replaceNotes}
-                onChange={(event) => setReplaceNotes(event.target.checked)}
-                required
-              />
-              Replace the saved notes with this text
-            </label>
+            <CheckboxField
+              className="mt-2 flex items-center gap-2"
+              label="Replace the saved notes with this text"
+              checked={replaceNotes}
+              onChange={(event) => setReplaceNotes(event.target.checked)}
+              required
+            />
           ) : null}
         </div>
-        <button
-          className="button-primary"
+        <Button
           type="submit"
           disabled={pending || (notesChanged && !replaceNotes)}
         >
           {pending ? "Saving…" : "Save changes"}
-        </button>
+        </Button>
       </fieldset>
-      <Link href="/library" className="text-link">
-        Back to library
-      </Link>
+      <TextLink href="/library">Back to library</TextLink>
     </form>
   );
 }

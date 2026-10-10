@@ -1,3 +1,4 @@
+import { LoadingMessage } from "@/components/ui/feedback";
 export default function ChatLoading() {
-  return <p role="status">Loading saved conversations…</p>;
+  return <LoadingMessage>Loading saved conversations…</LoadingMessage>;
 }

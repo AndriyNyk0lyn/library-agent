@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { ErrorMessage } from "@/components/ui/feedback";
+import { TextLink } from "@/components/ui/text-link";
 import { requireReader } from "@/auth/reader";
 import { getBook } from "@/books/service";
 import { getReaderProfile } from "@/profile/service";
@@ -20,9 +21,7 @@ export default async function NewPlanPage({
           title="New reading plan"
           description="Choose a saved library book to schedule."
         />
-        <Link href="/library" className="text-link">
-          Choose a book in your library
-        </Link>
+        <TextLink href="/library">Choose a book in your library</TextLink>
       </>
     );
   const [book, profile] = await Promise.all([
@@ -36,16 +35,14 @@ export default async function NewPlanPage({
           title="New reading plan"
           description="Load the book and saved constraints before scheduling."
         />
-        <p role="alert">
+        <ErrorMessage>
           {!book.ok
             ? book.error.message
             : !profile.ok
               ? profile.error.message
               : "Could not load plan inputs."}
-        </p>
-        <Link href={`/plans/new?book_id=${book_id}`} className="text-link">
-          Try again
-        </Link>
+        </ErrorMessage>
+        <TextLink href={`/plans/new?book_id=${book_id}`}>Try again</TextLink>
       </>
     );
   const timezone = profile.profile.timezone ?? "";

@@ -1,0 +1,28 @@
+// The component surface synced to Claude Design. Add a line here to sync a new component.
+export { AppHeader, SkipLink } from "../../src/components/app-header";
+export { AppNavigation } from "../../src/components/app-navigation";
+export { PageHeading } from "../../src/components/page-heading";
+export { SetupStep, SetupSteps } from "../../src/components/setup-steps";
+export { Button } from "../../src/components/ui/button";
+export { Card, CardListItem, CardSection } from "../../src/components/ui/card";
+export { Checkbox, CheckboxField } from "../../src/components/ui/checkbox";
+export { Disclosure, NotesDisclosure } from "../../src/components/ui/disclosure";
+export { EmptyState, ErrorMessage, LoadingMessage, StatusMessage } from "../../src/components/ui/feedback";
+export { Field, FieldError, FieldHelp, InputField, SelectField, TextareaField } from "../../src/components/ui/field";
+export { FormFeedback } from "../../src/components/ui/form-feedback";
+export { Input } from "../../src/components/ui/input";
+export { Label } from "../../src/components/ui/label";
+export { LinkedText } from "../../src/components/ui/linked-text";
+export { MetadataItem } from "../../src/components/ui/metadata-item";
+export { NavigationLink } from "../../src/components/ui/navigation-link";
+export { Pagination } from "../../src/components/ui/pagination";
+export { Select } from "../../src/components/ui/select";
+export { SubmitButton } from "../../src/components/ui/submit-button";
+export { AnchorLink, TextLink } from "../../src/components/ui/text-link";
+export { Textarea } from "../../src/components/ui/textarea";
+export { BookAuthors } from "../../src/books/book-authors";
+export { BookCard } from "../../src/books/book-card";
+export { NotesField, OwnershipField, PageCountField, RatingField, ReadingStatusField } from "../../src/books/book-fields";
+export { CatalogCandidateCard } from "../../src/books/catalog/candidate-card";
+export { PlanResultCard, PlanSummary } from "../../src/plans/plan-summary";
+export { CurrentPathProvider } from "../next-shim/navigation";

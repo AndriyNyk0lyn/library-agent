@@ -1,13 +1,21 @@
 "use client";
 import { useState, useTransition } from "react";
-import Link from "next/link";
+import { TextLink } from "@/components/ui/text-link";
+import { ErrorMessage } from "@/components/ui/feedback";
 import { processImport } from "./import-actions";
 import {
   maxImportBytes,
   type ImportChoices,
   type ImportState,
 } from "./import-schema";
-import { readingStatuses, statusLabels } from "./schemas";
+import { readingStatuses } from "./schemas";
+import {
+  ImportFileSelection,
+  ShelfMappings,
+  ImportReportSummary,
+  ImportPreview,
+  ImportConfirmation,
+} from "./import-preview";
 
 export function ImportForm() {
   const [file, setFile] = useState<File>();
@@ -59,19 +67,15 @@ export function ImportForm() {
     });
   }
   const report = state.report;
-  const excluded = report ? report.rows.length - selected.length : 0;
   return (
     <div className="space-y-6">
-      {state.error ? <p role="alert">{state.error}</p> : null}
+      {state.error ? <ErrorMessage>{state.error}</ErrorMessage> : null}
       <fieldset disabled={pending} className="space-y-4">
         <legend className="sr-only">Import CSV</legend>
-        <label htmlFor="goodreads-file" className="form-label">
-          UTF-8 CSV (up to 2 MB and 1,000 books)
-        </label>
-        <input
-          id="goodreads-file"
-          type="file"
-          accept=".csv,text/csv"
+        <ImportFileSelection
+          file={file}
+          pending={pending}
+          onPreview={() => run(false)}
           onChange={(event) => {
             const next = event.target.files?.[0];
             setFile(next);
@@ -87,163 +91,55 @@ export function ImportForm() {
             setNeedsPreview(false);
           }}
         />
-        <button
-          type="button"
-          className="button-primary"
-          disabled={!file || file.size > maxImportBytes}
-          onClick={() => run(false)}
-        >
-          {pending ? "Processing CSV…" : "Preview CSV"}
-        </button>
-        {mappingShelves.length ? (
-          <section className="space-y-3">
-            <h2 className="font-semibold">Shelf mappings</h2>
-            <p>
-              Unmapped shelves stay excluded. Apply mappings with Preview CSV
-              before importing.
-            </p>
-            {mappingShelves.map((shelf, index) => (
-              <div key={shelf}>
-                <label htmlFor={`shelf-${index}`} className="form-label">
-                  {shelf || "Blank exclusive shelf"}
-                </label>
-                <select
-                  id={`shelf-${index}`}
-                  value={mappings[shelf] ?? ""}
-                  className="form-field"
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setMappings((previous) => {
-                      const next = { ...previous };
-                      const status = readingStatuses.find(
-                        (status) => status === value,
-                      );
-                      if (status) next[shelf] = status;
-                      else delete next[shelf];
-                      return next;
-                    });
-                    setNeedsPreview(true);
-                  }}
-                >
-                  <option value="">Exclude</option>
-                  {readingStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabels[status]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </section>
-        ) : null}
+        <ShelfMappings
+          shelves={mappingShelves}
+          mappings={mappings}
+          onChange={(shelf, value) => {
+            setMappings((previous) => {
+              const next = { ...previous };
+              const status = readingStatuses.find((status) => status === value);
+              if (status) next[shelf] = status;
+              else delete next[shelf];
+              return next;
+            });
+            setNeedsPreview(true);
+          }}
+        />
         {report ? (
           <>
-            <p role="status">
-              {state.confirmed
-                ? `Added ${report.added}; skipped ${report.skipped}; failed ${report.failed}; uncertain ${report.uncertain}; excluded ${report.excluded}.`
-                : `Selected ${selected.length}; excluded ${excluded}; duplicates ${report.rows.filter((row) => row.code === "duplicate").length}.`}
-            </p>
-            {state.confirmed ? (
-              <p>
-                Retry this same CSV and selection if any batch was uncertain.
-                Rows already committed will be skipped.
-              </p>
-            ) : (
-              <p>
-                Ambiguous matches stay excluded until you select “Import as a
-                separate edition”. No records are merged.
-              </p>
-            )}
-            <ul className="space-y-4" aria-label="Import preview">
-              {report.rows.map((row) => (
-                <li
-                  key={row.row}
-                  className="rounded border border-line p-4 space-y-2"
-                >
-                  <h3 className="font-semibold">
-                    Row {row.row}: {row.title} — {row.authors.join(", ")}
-                  </h3>
-                  <p>
-                    {row.status ? statusLabels[row.status] : "Unmapped shelf"} ·
-                    Rating {row.rating ?? "Unrated"} · {row.code}
-                  </p>
-                  {row.error ? <p>{row.error}</p> : null}
-                  {row.warnings.length ? (
-                    <ul aria-label="Row warnings">
-                      {row.warnings.map((warning) => (
-                        <li key={warning}>{warning}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {row.candidates.length ? (
-                    <div>
-                      <p>Existing title/author candidates:</p>
-                      <ul>
-                        {row.candidates.map((candidate) => (
-                          <li key={candidate.id}>
-                            <Link
-                              href={`/library/${candidate.id}`}
-                              className="text-link"
-                            >
-                              {candidate.title} — {candidate.authors.join(", ")}
-                            </Link>{" "}
-                            · ISBN{" "}
-                            {candidate.isbn13 ?? candidate.isbn10 ?? "Unknown"}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                  {!state.confirmed &&
-                  (row.code === "ready" || row.code === "ambiguous") ? (
-                    <label className="flex gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(row.row)}
-                        onChange={(event) => {
-                          const checked = event.target.checked;
-                          setSelected((previous) =>
-                            checked
-                              ? [...previous, row.row]
-                              : previous.filter((number) => number !== row.row),
-                          );
-                          if (row.code === "ambiguous")
-                            setAllowAmbiguous((previous) =>
-                              checked
-                                ? [...previous, row.row]
-                                : previous.filter(
-                                    (number) => number !== row.row,
-                                  ),
-                            );
-                        }}
-                      />
-                      {row.code === "ambiguous"
-                        ? "Import as a separate edition"
-                        : "Import this row"}
-                    </label>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              className="button-primary"
-              disabled={needsPreview || selected.length === 0}
-              onClick={() => run(true)}
-            >
-              {state.confirmed
-                ? "Retry selected import"
-                : `Confirm import of ${selected.length} selected books`}
-            </button>
-            {needsPreview ? (
-              <p>Preview again to apply the changed mappings.</p>
-            ) : null}
+            <ImportReportSummary
+              report={report}
+              confirmed={Boolean(state.confirmed)}
+              selectedCount={selected.length}
+            />
+            <ImportPreview
+              rows={report.rows}
+              confirmed={Boolean(state.confirmed)}
+              selected={selected}
+              onSelect={(row, checked) => {
+                setSelected((previous) =>
+                  checked
+                    ? [...previous, row.row]
+                    : previous.filter((number) => number !== row.row),
+                );
+                if (row.code === "ambiguous")
+                  setAllowAmbiguous((previous) =>
+                    checked
+                      ? [...previous, row.row]
+                      : previous.filter((number) => number !== row.row),
+                  );
+              }}
+            />
+            <ImportConfirmation
+              needsPreview={needsPreview}
+              selectedCount={selected.length}
+              confirmed={Boolean(state.confirmed)}
+              onConfirm={() => run(true)}
+            />
           </>
         ) : null}
       </fieldset>
-      <Link href="/library" className="text-link">
-        Back to library
-      </Link>
+      <TextLink href="/library">Back to library</TextLink>
     </div>
   );
 }
