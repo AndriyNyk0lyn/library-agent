@@ -1,0 +1,134 @@
+{
+  "version": "1.0",
+  "stitch": {
+    "projectId": "14342248703434290990",
+    "referenceScreen": {
+      "id": "906604762304805267",
+      "route": "/profile",
+      "title": "/profile",
+      "deviceType": "DESKTOP",
+      "extractedAt": "2026-10-10T07:34:13.963Z"
+    },
+    "referenceScreens": [
+      {
+        "id": "11997416600451591145",
+        "route": "/setup",
+        "title": "/setup",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:31:38.988Z"
+      },
+      {
+        "id": "7855689229420987347",
+        "route": "/auth/sign-in",
+        "title": "/auth/sign-in",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:31:47.088Z"
+      },
+      {
+        "id": "4387009997870952243",
+        "route": "/auth/sign-up",
+        "title": "/auth/sign-up",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:31:55.191Z"
+      },
+      {
+        "id": "2217629928659857048",
+        "route": "/auth/forgot-password",
+        "title": "/auth/forgot-password",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:32:03.168Z"
+      },
+      {
+        "id": "15832978707531927147",
+        "route": "/auth/resend-confirmation",
+        "title": "/auth/resend-confirmation",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:32:11.564Z"
+      },
+      {
+        "id": "8859953137535900756",
+        "route": "/auth/reset-password",
+        "title": "/auth/reset-password",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:32:19.684Z"
+      },
+      {
+        "id": "9421152443872449101",
+        "route": "/library",
+        "title": "/library",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:32:38.323Z"
+      },
+      {
+        "id": "9617780537786985619",
+        "route": "/library/new",
+        "title": "/library/new",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:32:46.367Z"
+      },
+      {
+        "id": "3805697036450091742",
+        "route": "/library/import",
+        "title": "/library/import",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:32:54.609Z"
+      },
+      {
+        "id": "15702435326602032199",
+        "route": "/library/catalog",
+        "title": "/library/catalog",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:33:03.234Z"
+      },
+      {
+        "id": "14626687214629985606",
+        "route": "/library/catalog/[edition]",
+        "title": "/library/catalog/[edition]",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:33:12.860Z"
+      },
+      {
+        "id": "2496915883113698843",
+        "route": "/library/[id]",
+        "title": "/library/[id]",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:33:22.812Z"
+      },
+      {
+        "id": "15874540118110932292",
+        "route": "/chat",
+        "title": "/chat",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:33:31.619Z"
+      },
+      {
+        "id": "6293452901049687245",
+        "route": "/chat/[id]",
+        "title": "/chat/[id]",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:33:40.918Z"
+      },
+      {
+        "id": "9193010211343100272",
+        "route": "/plans",
+        "title": "/plans",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:33:48.917Z"
+      },
+      {
+        "id": "3005171029150644280",
+        "route": "/plans/new",
+        "title": "/plans/new?book_id",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:34:05.604Z"
+      },
+      {
+        "id": "906604762304805267",
+        "route": "/profile",
+        "title": "/profile",
+        "deviceType": "DESKTOP",
+        "extractedAt": "2026-10-10T07:34:13.963Z"
+      }
+    ]
+  }
+}
